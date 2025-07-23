@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{22ECFE7A-8A3C-463E-9C80-D9707E1AF313}</ProjectGuid>
+    <OutputType>WinExe</OutputType>
+    <RootNamespace>CadastroMetasVendedores</RootNamespace>
+    <AssemblyName>CadastroMetasVendedores</AssemblyName>
+    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+    <Deterministic>true</Deterministic>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Deployment" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Forms\CadastroMetaForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\CadastroMetaForm.Designer.cs">
+      <DependentUpon>CadastroMetaForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Forms\VisualizacaoMetasForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\VisualizacaoMetasForm.Designer.cs">
+      <DependentUpon>VisualizacaoMetasForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Models\Meta.cs" />
+    <Compile Include="Models\Produto.cs" />
+    <Compile Include="Models\Vendedor.cs" />
+    <Compile Include="Program.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Repositories\Interfaces\IMetaRepository.cs" />
+    <Compile Include="Repositories\Interfaces\IProdutoRepository.cs" />
+    <Compile Include="Repositories\Interfaces\IRepository.cs" />
+    <Compile Include="Repositories\Interfaces\IVendedorRepository.cs" />
+    <Compile Include="Repositories\MetaRepository.cs" />
+    <Compile Include="Repositories\ProdutoRepository.cs" />
+    <Compile Include="Repositories\VendedorRepository.cs" />
+    <Compile Include="Services\Interfaces\IMetaService.cs" />
+    <Compile Include="Services\Interfaces\IProdutoService.cs" />
+    <Compile Include="Services\Interfaces\IVendedorService.cs" />
+    <Compile Include="Services\MetaService.cs" />
+    <Compile Include="Services\ProdutoService.cs" />
+    <Compile Include="Services\VendedorService.cs" />
+    <EmbeddedResource Include="Forms\CadastroMetaForm.resx">
+      <DependentUpon>CadastroMetaForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Resources.resx</DependentUpon>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <None Include="Properties\Settings.settings">
+      <Generator>SettingsSingleFileGenerator</Generator>
+      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+    </None>
+    <Compile Include="Properties\Settings.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Settings.settings</DependentUpon>
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="App.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Assets\Icons\icone_adicionar.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Assets\Icons\icone_salvar.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Assets\Icons\icone_buscar.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Assets\Icons\icone_check.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Assets\Icons\icone_duplicar.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Assets\Icons\icone_editar.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Assets\Icons\icone_excluir.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Assets\Icons\icone_novo.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Assets\Icons\icone_seta_baixo.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Assets\Icons\icone_seta_cima.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Assets\Icons\icone_uncheck.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Assets\Icons\icone_voltar.png" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+</Project>

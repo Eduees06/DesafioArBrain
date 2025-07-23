@@ -1,0 +1,11 @@
+D:\WindowsForms\Curso\CadastroMetasVendedores\CadastroMetasVendedores\bin\Debug\CadastroMetasVendedores.exe.config
+D:\WindowsForms\Curso\CadastroMetasVendedores\CadastroMetasVendedores\bin\Debug\CadastroMetasVendedores.exe
+D:\WindowsForms\Curso\CadastroMetasVendedores\CadastroMetasVendedores\bin\Debug\CadastroMetasVendedores.pdb
+D:\WindowsForms\Curso\CadastroMetasVendedores\CadastroMetasVendedores\obj\Debug\CadastroMetasVendedores.csproj.AssemblyReference.cache
+D:\WindowsForms\Curso\CadastroMetasVendedores\CadastroMetasVendedores\obj\Debug\CadastroMetasVendedores.Properties.Resources.resources
+D:\WindowsForms\Curso\CadastroMetasVendedores\CadastroMetasVendedores\obj\Debug\CadastroMetasVendedores.csproj.GenerateResource.cache
+D:\WindowsForms\Curso\CadastroMetasVendedores\CadastroMetasVendedores\obj\Debug\CadastroMetasVendedores.csproj.CoreCompileInputs.cache
+D:\WindowsForms\Curso\CadastroMetasVendedores\CadastroMetasVendedores\obj\Debug\CadastroMetasVendedores.exe
+D:\WindowsForms\Curso\CadastroMetasVendedores\CadastroMetasVendedores\obj\Debug\CadastroMetasVendedores.pdb
+D:\WindowsForms\Curso\CadastroMetasVendedores\CadastroMetasVendedores\obj\Debug\CadastroMetasVendedores.exe.config
+D:\WindowsForms\Curso\CadastroMetasVendedores\CadastroMetasVendedores\obj\Debug\CadastroMetasVendedores.Forms.CadastroMetaForm.resources
