@@ -138,5 +138,8 @@
   <ItemGroup>
     <None Include="Assets\Icons\icone_voltar.png" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="Assets\Icons\VectorArBrain.png" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Windows.Forms;
 using CadastroMetasVendedores.Models;
 using CadastroMetasVendedores.Services;
+using System.IO;
 
 namespace CadastroMetasVendedores.Forms
 {
@@ -25,6 +26,7 @@ namespace CadastroMetasVendedores.Forms
         private Label lblMensagemVazia;
         private TextBox txtBusca;
         private ComboBox cmbTipoBusca;
+        private PictureBox picLogo;
 
         public VisualizacaoMetasForm(MetaService metaService, VendedorService vendedorService, ProdutoService produtoService)
         {
@@ -45,22 +47,25 @@ namespace CadastroMetasVendedores.Forms
             this.Text = "Visualização de Metas";
             this.Size = new Size(1200, 720);
             this.StartPosition = FormStartPosition.CenterScreen;
-            this.MinimumSize = new Size(800, 600);
+            this.MinimumSize = new Size(1200, 720);
+            this.MaximumSize = new Size(1200, 720); // Fixa o tamanho
             this.Font = new Font("Montserrat", 9F, FontStyle.Regular, GraphicsUnit.Point, 0);
+            this.BackColor = Color.FromArgb(51, 67, 85); // #334355
 
             // Panel de fundo para a tabela
             pnlBackground = new Panel();
-            pnlBackground.Location = new Point(8, 60);
-            pnlBackground.Size = new Size(1184, 580);
-            pnlBackground.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            pnlBackground.Location = new Point(8, 80);
+            pnlBackground.Size = new Size(1184, 480);
+            pnlBackground.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
             pnlBackground.BorderStyle = BorderStyle.FixedSingle;
-            pnlBackground.BackColor = Color.White;
+            pnlBackground.BackColor = Color.FromArgb(244, 244, 244); // #F4F4F4
+            pnlBackground.Paint += PnlBackground_Paint; // Para desenhar borda personalizada
 
             // DataGridView
             dgvMetas = new DataGridView();
-            dgvMetas.Location = new Point(5, 5);
-            dgvMetas.Size = new Size(1174, 570);
-            dgvMetas.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            dgvMetas.Location = new Point(5, 0);
+            dgvMetas.Size = new Size(1174, 480);
+            dgvMetas.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
             dgvMetas.BorderStyle = BorderStyle.FixedSingle;
             dgvMetas.AllowUserToAddRows = false;
             dgvMetas.AllowUserToDeleteRows = false;
@@ -68,13 +73,16 @@ namespace CadastroMetasVendedores.Forms
             dgvMetas.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
             dgvMetas.MultiSelect = false;
             dgvMetas.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
-            dgvMetas.ColumnHeadersDefaultCellStyle.BackColor = Color.FromArgb(64, 64, 64);
+            dgvMetas.ColumnHeadersDefaultCellStyle.BackColor = Color.FromArgb(51, 67, 85); // #334355
             dgvMetas.ColumnHeadersDefaultCellStyle.ForeColor = Color.White;
             dgvMetas.ColumnHeadersDefaultCellStyle.Font = new Font("Montserrat", 9F, FontStyle.Bold);
             dgvMetas.AlternatingRowsDefaultCellStyle.BackColor = Color.FromArgb(244, 244, 244);
+            dgvMetas.DefaultCellStyle.BackColor = Color.White;
             dgvMetas.RowHeadersVisible = false;
             dgvMetas.Font = new Font("Montserrat", 9F);
             dgvMetas.CellDoubleClick += DgvMetas_CellDoubleClick;
+            dgvMetas.GridColor = Color.FromArgb(255, 197, 36); // #ffc524
+            dgvMetas.ColumnHeadersHeight = 35;
 
             pnlBackground.Controls.Add(dgvMetas);
 
@@ -88,57 +96,56 @@ namespace CadastroMetasVendedores.Forms
             lblMensagemVazia.Visible = false;
             pnlBackground.Controls.Add(lblMensagemVazia);
 
-            // Botões (da esquerda para direita: Excluir, Buscar, Editar, Adicionar, Voltar)
-            int buttonY = 15;
-            int buttonWidth = 100;
-            int buttonHeight = 35;
-            int buttonSpacing = 120;
-            int startX = 20;
+            // Verificar se os ícones existem (debug)
+            VerificarIcones();
 
-            btnExcluir = new Button();
-            btnExcluir.Text = "Excluir";
+            // Botões com estilos personalizados - abaixo do painel
+            int buttonY = 580; // Posicionado abaixo do painel
+            int buttonWidth = 100;
+            int buttonHeight = 40;
+            int buttonSpacing = 20; // Espaçamento entre botões
+            int totalButtonsWidth = (buttonWidth * 5) + (buttonSpacing * 4); // 5 botões + 4 espaços
+            int startX = (1200 - totalButtonsWidth) / 2; // Centraliza na tela de 1200px
+
+            // Botão Excluir
+            btnExcluir = CreateStyledButton("Excluir", Color.FromArgb(255, 72, 72), Color.White, Color.Black);
             btnExcluir.Location = new Point(startX, buttonY);
             btnExcluir.Size = new Size(buttonWidth, buttonHeight);
-            btnExcluir.UseVisualStyleBackColor = true;
-            btnExcluir.Font = new Font("Montserrat", 9F);
             btnExcluir.Click += BtnExcluir_Click;
+            SetButtonIcon(btnExcluir, "icone_excluir.png", ContentAlignment.MiddleRight);
 
-            btnBuscar = new Button();
-            btnBuscar.Text = "Buscar";
-            btnBuscar.Location = new Point(startX + buttonSpacing, buttonY);
+            // Botão Buscar
+            btnBuscar = CreateStyledButton("Buscar", Color.DarkCyan, Color.White, Color.Black);
+            btnBuscar.Location = new Point(startX + buttonWidth + buttonSpacing, buttonY);
             btnBuscar.Size = new Size(buttonWidth, buttonHeight);
-            btnBuscar.UseVisualStyleBackColor = true;
-            btnBuscar.Font = new Font("Montserrat", 9F);
             btnBuscar.Click += BtnBuscar_Click;
+            SetButtonIcon(btnBuscar, "icone_buscar.png", ContentAlignment.MiddleRight);
 
-            btnEditar = new Button();
-            btnEditar.Text = "Editar";
-            btnEditar.Location = new Point(startX + (buttonSpacing * 2), buttonY);
+            // Botão Editar
+            btnEditar = CreateStyledButton("Editar", Color.FromArgb(51, 67, 85), Color.White, Color.White);
+            btnEditar.Location = new Point(startX + (buttonWidth + buttonSpacing) * 2, buttonY);
             btnEditar.Size = new Size(buttonWidth, buttonHeight);
-            btnEditar.UseVisualStyleBackColor = true;
-            btnEditar.Font = new Font("Montserrat", 9F);
             btnEditar.Click += BtnEditar_Click;
+            SetButtonIcon(btnEditar, "icone_editar.png", ContentAlignment.MiddleRight);
 
-            btnAdicionar = new Button();
-            btnAdicionar.Text = "Adicionar";
-            btnAdicionar.Location = new Point(startX + (buttonSpacing * 3), buttonY);
+            // Botão Adicionar
+            btnAdicionar = CreateStyledButton("Adicionar", Color.FromArgb(23, 181, 28), Color.White, Color.Black);
+            btnAdicionar.Location = new Point(startX + (buttonWidth + buttonSpacing) * 3, buttonY);
             btnAdicionar.Size = new Size(buttonWidth, buttonHeight);
-            btnAdicionar.UseVisualStyleBackColor = true;
-            btnAdicionar.Font = new Font("Montserrat", 9F);
             btnAdicionar.Click += BtnAdicionar_Click;
+            SetButtonIcon(btnAdicionar, "icone_adicionar.png", ContentAlignment.MiddleRight);
 
-            btnVoltar = new Button();
-            btnVoltar.Text = "Voltar";
-            btnVoltar.Location = new Point(startX + (buttonSpacing * 4), buttonY);
+            // Botão Voltar
+            btnVoltar = CreateStyledButton("Voltar", Color.FromArgb(51, 67, 85), Color.White, Color.White);
+            btnVoltar.Location = new Point(startX + (buttonWidth + buttonSpacing) * 4, buttonY);
             btnVoltar.Size = new Size(buttonWidth, buttonHeight);
-            btnVoltar.UseVisualStyleBackColor = true;
-            btnVoltar.Font = new Font("Montserrat", 9F);
             btnVoltar.Click += BtnVoltar_Click;
+            SetButtonIcon(btnVoltar, "icone_voltar.png", ContentAlignment.MiddleLeft);
 
             // Checkbox para mostrar inativos
             chkMostrarInativos = new CheckBox();
             chkMostrarInativos.Text = "Mostrar inativos";
-            chkMostrarInativos.Location = new Point(700, 25);
+            chkMostrarInativos.Location = new Point(750, 35);
             chkMostrarInativos.Size = new Size(150, 20);
             chkMostrarInativos.Font = new Font("Montserrat", 9F);
             chkMostrarInativos.ForeColor = Color.Gray;
@@ -147,32 +154,40 @@ namespace CadastroMetasVendedores.Forms
             // Campos de busca
             Label lblBusca = new Label();
             lblBusca.Text = "Buscar por:";
-            lblBusca.Location = new Point(870, 8);
+            lblBusca.Location = new Point(920, 15);
             lblBusca.Size = new Size(80, 15);
             lblBusca.Font = new Font("Montserrat", 9F);
             lblBusca.ForeColor = Color.Gray;
 
             cmbTipoBusca = new ComboBox();
-            cmbTipoBusca.Location = new Point(870, 25);
+            cmbTipoBusca.Location = new Point(920, 35);
             cmbTipoBusca.Size = new Size(120, 21);
             cmbTipoBusca.Font = new Font("Montserrat", 9F);
             cmbTipoBusca.DropDownStyle = ComboBoxStyle.DropDownList;
             cmbTipoBusca.Items.AddRange(new object[] { "Vendedor", "Produto", "Tipo Meta" });
             cmbTipoBusca.SelectedIndex = 0;
+            cmbTipoBusca.BackColor = Color.White;
 
             txtBusca = new TextBox();
-            txtBusca.Location = new Point(1000, 25);
-            txtBusca.Size = new Size(180, 21);
+            txtBusca.Location = new Point(1050, 35);
+            txtBusca.Size = new Size(130, 21);
             txtBusca.Font = new Font("Montserrat", 9F);
             txtBusca.KeyPress += TxtBusca_KeyPress;
+            txtBusca.BackColor = Color.White;
 
             // Label para total de registros
             lblTotalRegistros = new Label();
-            lblTotalRegistros.Location = new Point(8, 650);
+            lblTotalRegistros.Location = new Point(8, 640);
             lblTotalRegistros.Size = new Size(300, 20);
-            lblTotalRegistros.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
             lblTotalRegistros.Font = new Font("Montserrat", 9F);
             lblTotalRegistros.ForeColor = Color.Gray;
+
+            // Logo da empresa
+            picLogo = new PictureBox();
+            picLogo.Location = new Point(950, 630);
+            picLogo.Size = new Size(240, 60);
+            picLogo.SizeMode = PictureBoxSizeMode.Zoom;
+            LoadLogo();
 
             // Adicionar controles ao form
             this.Controls.AddRange(new Control[] {
@@ -186,10 +201,204 @@ namespace CadastroMetasVendedores.Forms
                 lblBusca,
                 cmbTipoBusca,
                 txtBusca,
-                lblTotalRegistros
+                lblTotalRegistros,
+                picLogo
             });
 
             this.ResumeLayout(false);
+        }
+
+        private void VerificarIcones()
+        {
+            try
+            {
+                string[] possibleBasePaths = {
+                    Application.StartupPath,
+                    Directory.GetCurrentDirectory(),
+                    AppDomain.CurrentDomain.BaseDirectory,
+                    Environment.CurrentDirectory
+                };
+
+                foreach (string basePath in possibleBasePaths)
+                {
+                    string iconsPath = Path.Combine(basePath, "Assets", "Icons");
+                    System.Diagnostics.Debug.WriteLine($"Verificando: {iconsPath}");
+
+                    if (Directory.Exists(iconsPath))
+                    {
+                        System.Diagnostics.Debug.WriteLine("Diretório Assets/Icons encontrado!");
+                        string[] files = Directory.GetFiles(iconsPath, "*.png");
+                        System.Diagnostics.Debug.WriteLine($"Arquivos PNG encontrados: {files.Length}");
+                        foreach (string file in files)
+                        {
+                            System.Diagnostics.Debug.WriteLine($"  - {Path.GetFileName(file)}");
+                        }
+                        break;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Erro ao verificar ícones: {ex.Message}");
+            }
+        }
+
+        private Button CreateStyledButton(string text, Color backgroundColor, Color textColor, Color borderColor)
+        {
+            Button btn = new Button();
+            btn.Text = text;
+            btn.BackColor = backgroundColor;
+            btn.ForeColor = textColor;
+            btn.FlatStyle = FlatStyle.Flat;
+            btn.FlatAppearance.BorderColor = borderColor;
+            btn.FlatAppearance.BorderSize = 2;
+            btn.Font = new Font("Montserrat", 9F, FontStyle.Bold);
+            btn.UseVisualStyleBackColor = false;
+            btn.Cursor = Cursors.Hand;
+
+            // Efeito hover
+            btn.MouseEnter += (s, e) => {
+                btn.BackColor = Color.FromArgb(Math.Min(255, backgroundColor.R + 20),
+                                             Math.Min(255, backgroundColor.G + 20),
+                                             Math.Min(255, backgroundColor.B + 20));
+            };
+            btn.MouseLeave += (s, e) => {
+                btn.BackColor = backgroundColor;
+            };
+
+            return btn;
+        }
+
+        private void SetButtonIcon(Button button, string iconResourceName, ContentAlignment alignment)
+        {
+            try
+            {
+                // Tenta carregar do Resources primeiro
+                Image icon = null;
+
+                switch (iconResourceName)
+                {
+                    case "icone_buscar.png":
+                        try { icon = Properties.Resources.icone_buscar; } catch { }
+                        break;
+                    case "icone_adicionar.png":
+                        try { icon = Properties.Resources.icone_adicionar; } catch { }
+                        break;
+                    case "icone_voltar.png":
+                        try { icon = Properties.Resources.icone_voltar; } catch { }
+                        break;
+                    case "icone_excluir.png":
+                        try { icon = Properties.Resources.icone_excluir; } catch { }
+                        break;
+                    case "icone_editar.png":
+                        try { icon = Properties.Resources.icone_editar; } catch { }
+                        break;
+                }
+
+                // Se não encontrou no Resources, tenta nos arquivos
+                if (icon == null)
+                {
+                    string[] possiblePaths = {
+                        Path.Combine(Application.StartupPath, "Assets", "Icons", iconResourceName),
+                        Path.Combine(Directory.GetCurrentDirectory(), "Assets", "Icons", iconResourceName),
+                        Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets", "Icons", iconResourceName),
+                        Path.Combine(Environment.CurrentDirectory, "Assets", "Icons", iconResourceName)
+                    };
+
+                    foreach (string path in possiblePaths)
+                    {
+                        if (File.Exists(path))
+                        {
+                            icon = Image.FromFile(path);
+                            break;
+                        }
+                    }
+                }
+
+                if (icon != null)
+                {
+                    // Redimensiona o ícone
+                    Image resizedIcon = new Bitmap(icon, new Size(16, 16));
+                    button.Image = resizedIcon;
+                    button.ImageAlign = alignment;
+
+                    // Ajusta o espaçamento entre texto e ícone
+                    if (alignment == ContentAlignment.MiddleLeft)
+                    {
+                        button.TextImageRelation = TextImageRelation.ImageBeforeText;
+                        button.Padding = new Padding(5, 0, 0, 0);
+                    }
+                    else
+                    {
+                        button.TextImageRelation = TextImageRelation.TextBeforeImage;
+                        button.Padding = new Padding(0, 0, 5, 0);
+                    }
+                }
+                else
+                {
+                    System.Diagnostics.Debug.WriteLine($"Ícone não encontrado: {iconResourceName}");
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Erro ao carregar ícone {iconResourceName}: {ex.Message}");
+            }
+        }
+
+        private void LoadLogo()
+        {
+            try
+            {
+                // Tenta carregar do Resources primeiro
+                Image logo = null;
+                try
+                {
+                    logo = Properties.Resources.VectorArBrain;
+                }
+                catch { }
+
+                // Se não encontrou no Resources, tenta nos arquivos
+                if (logo == null)
+                {
+                    string[] possiblePaths = {
+                        Path.Combine(Application.StartupPath, "Assets", "Icons", "VectorArBrain.png"),
+                        Path.Combine(Directory.GetCurrentDirectory(), "Assets", "Icons", "VectorArBrain.png"),
+                        Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets", "Icons", "VectorArBrain.png"),
+                        Path.Combine(Environment.CurrentDirectory, "Assets", "Icons", "VectorArBrain.png")
+                    };
+
+                    foreach (string path in possiblePaths)
+                    {
+                        if (File.Exists(path))
+                        {
+                            logo = Image.FromFile(path);
+                            break;
+                        }
+                    }
+                }
+
+                if (logo != null)
+                {
+                    picLogo.Image = logo;
+                }
+                else
+                {
+                    System.Diagnostics.Debug.WriteLine("Logo não encontrada: VectorArBrain.png");
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Erro ao carregar logo: {ex.Message}");
+            }
+        }
+
+        private void PnlBackground_Paint(object sender, PaintEventArgs e)
+        {
+            Panel panel = sender as Panel;
+            using (Pen pen = new Pen(Color.FromArgb(255, 197, 36), 2)) // #ffc524
+            {
+                e.Graphics.DrawRectangle(pen, 0, 0, panel.Width - 1, panel.Height - 1);
+            }
         }
 
         private void CarregarDados()
