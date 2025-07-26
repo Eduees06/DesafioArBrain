@@ -39,6 +39,7 @@ namespace CadastroMetasVendedores.Repositories
             var meta = GetById(entity.Id);
             if (meta == null) return false;
 
+            meta.Nome = entity.Nome;
             meta.VendedorId = entity.VendedorId;
             meta.ProdutoId = entity.ProdutoId;
             meta.TipoMeta = entity.TipoMeta;
@@ -221,6 +222,13 @@ namespace CadastroMetasVendedores.Repositories
                 m.Ativo);
         }
 
+        public bool ExisteMetaPorNome(string nome, int excludeId = 0)
+        {
+            return _metas.Any(m =>
+                m.Nome.Equals(nome, StringComparison.OrdinalIgnoreCase) &&
+                m.Id != excludeId);
+        }
+
         public Meta DuplicarMeta(int metaId)
         {
             var metaOriginal = GetById(metaId);
@@ -228,6 +236,7 @@ namespace CadastroMetasVendedores.Repositories
 
             var novaMeta = new Meta
             {
+                Nome = $"{metaOriginal.Nome} - Cópia",
                 VendedorId = metaOriginal.VendedorId,
                 ProdutoId = metaOriginal.ProdutoId,
                 TipoMeta = metaOriginal.TipoMeta,

@@ -34,8 +34,8 @@ namespace CadastroMetasVendedores.Services.Interfaces
         IEnumerable<Meta> ObterMetasPorTipo(TipoMeta tipoMeta);
         IEnumerable<Meta> ObterMetasPorPeriodicidade(PeriodicidadeMeta periodicidade);
 
-        // Validações de entrada
-        bool ValidarCamposObrigatorios(int vendedorId, int produtoId, TipoMeta tipoMeta,
+        // Validações de entrada - assinatura corrigida
+        bool ValidarCamposObrigatorios(string nome, int vendedorId, int produtoId, TipoMeta tipoMeta,
             decimal valor, PeriodicidadeMeta periodicidade, out List<string> camposInvalidos);
 
         // Formatação de valor para exibição

@@ -33,14 +33,6 @@ namespace CadastroMetasVendedores.Services
             return _vendedorRepository.GetById(id);
         }
 
-        public Vendedor ObterVendedorPorCodigo(string codigo)
-        {
-            if (string.IsNullOrWhiteSpace(codigo))
-                return null;
-
-            return _vendedorRepository.GetByCodigo(codigo);
-        }
-
         public IEnumerable<Vendedor> ObterVendedoresPorNome(string nome)
         {
             if (string.IsNullOrWhiteSpace(nome))
@@ -49,12 +41,54 @@ namespace CadastroMetasVendedores.Services
             return _vendedorRepository.GetByNome(nome);
         }
 
+        public bool ValidarVendedor(Vendedor vendedor, out string mensagemErro)
+        {
+            mensagemErro = string.Empty;
+
+            // Valida nome
+            if (string.IsNullOrWhiteSpace(vendedor.Nome))
+            {
+                mensagemErro = "Erro: Nome do vendedor obrigatório.\nDetalhe: O campo nome deve ser preenchido.\nDica: Digite o nome completo do vendedor.";
+                return false;
+            }
+
+            // Valida aspas simples no nome
+            if (ContemAspasSimples(vendedor.Nome))
+            {
+                mensagemErro = "Erro: Caractere inválido no nome.\nDetalhe: O nome do vendedor não pode conter aspas simples (').\nDica: Remova as aspas simples do nome.";
+                return false;
+            }
+
+            // Valida aspas simples no email
+            if (!string.IsNullOrEmpty(vendedor.Email) && ContemAspasSimples(vendedor.Email))
+            {
+                mensagemErro = "Erro: Caractere inválido no email.\nDetalhe: O email não pode conter aspas simples (').\nDica: Remova as aspas simples do email.";
+                return false;
+            }
+
+            // Valida aspas simples no telefone
+            if (!string.IsNullOrEmpty(vendedor.Telefone) && ContemAspasSimples(vendedor.Telefone))
+            {
+                mensagemErro = "Erro: Caractere inválido no telefone.\nDetalhe: O telefone não pode conter aspas simples (').\nDica: Remova as aspas simples do telefone.";
+                return false;
+            }
+
+            // Verifica se já existe vendedor com o mesmo nome
+            if (_vendedorRepository.ExistsByNome(vendedor.Nome, vendedor.Id))
+            {
+                mensagemErro = "Erro: Nome já cadastrado.\nDetalhe: Já existe um vendedor com este nome.\nDica: Verifique se o vendedor já não está cadastrado ou use um nome diferente.";
+                return false;
+            }
+
+            return true;
+        }
+
         public string FormatarNomeVendedor(Vendedor vendedor)
         {
             if (vendedor == null)
                 return string.Empty;
 
-            return $"{vendedor.Nome} ({vendedor.Codigo})";
+            return vendedor.Nome;
         }
 
         public Dictionary<int, string> ObterVendedoresParaComboBox()
@@ -68,6 +102,12 @@ namespace CadastroMetasVendedores.Services
             }
 
             return dicionario;
+        }
+
+        // Método para validar aspas simples
+        private bool ContemAspasSimples(string texto)
+        {
+            return !string.IsNullOrEmpty(texto) && texto.Contains("'");
         }
     }
 }

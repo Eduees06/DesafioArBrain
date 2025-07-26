@@ -15,6 +15,7 @@ namespace CadastroMetasVendedores.Repositories.Interfaces
             TipoMeta? tipoMeta = null, PeriodicidadeMeta? periodicidade = null);
         bool ExisteMetaDuplicada(int vendedorId, int produtoId, TipoMeta tipoMeta,
             PeriodicidadeMeta periodicidade, int excludeId = 0);
+        bool ExisteMetaPorNome(string nome, int excludeId = 0);
         Meta DuplicarMeta(int metaId);
     }
 }

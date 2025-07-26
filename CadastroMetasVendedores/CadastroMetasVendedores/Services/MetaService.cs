@@ -39,7 +39,7 @@ namespace CadastroMetasVendedores.Services
                 throw new ArgumentNullException(nameof(meta));
 
             if (!_metaRepository.Exists(meta.Id))
-                throw new InvalidOperationException("Meta não encontrada para atualização.");
+                throw new InvalidOperationException("Erro: Meta não encontrada.\nDetalhe: A meta que você está tentando atualizar não existe no sistema.\nDica: Verifique se a meta não foi removida por outro usuário e tente novamente.");
 
             if (!ValidarMeta(meta, out string mensagemErro))
                 throw new InvalidOperationException(mensagemErro);
@@ -50,7 +50,7 @@ namespace CadastroMetasVendedores.Services
         public bool ExcluirMeta(int id)
         {
             if (id <= 0)
-                throw new ArgumentException("ID inválido.", nameof(id));
+                throw new ArgumentException("Erro: ID inválido.\nDetalhe: O identificador da meta deve ser um número maior que zero.\nDica: Verifique o ID da meta selecionada.", nameof(id));
 
             if (!_metaRepository.Exists(id))
                 return false;
@@ -80,33 +80,35 @@ namespace CadastroMetasVendedores.Services
         {
             mensagemErro = string.Empty;
 
+            // Valida nome da meta
+            if (string.IsNullOrWhiteSpace(meta.Nome))
+            {
+                mensagemErro = "Erro: Nome da meta obrigatório.\nDetalhe: O campo nome da meta deve ser preenchido.\nDica: Digite um nome descritivo para identificar a meta.";
+                return false;
+            }
+
+            // Valida aspas simples
+            if (ContemAspasSimples(meta.Nome))
+            {
+                mensagemErro = "Erro: Caractere inválido no nome.\nDetalhe: O nome da meta não pode conter aspas simples (').\nDica: Remova as aspas simples do nome da meta.";
+                return false;
+            }
+
+            // Verifica se já existe uma meta com o mesmo nome
+            if (_metaRepository.ExisteMetaPorNome(meta.Nome, meta.Id))
+            {
+                mensagemErro = "Erro: Nome da meta já existe.\nDetalhe: Já existe uma meta cadastrada com este nome.\nDica: Escolha um nome diferente para a meta ou verifique se você não está duplicando uma meta existente.";
+                return false;
+            }
+
             // Valida se o vendedor existe e está ativo
             var vendedor = _vendedorRepository.GetById(meta.VendedorId);
             if (vendedor == null)
             {
-                mensagemErro = "Vendedor não encontrado.";
+                mensagemErro = "Erro: Vendedor não encontrado.\nDetalhe: O vendedor selecionado não existe no sistema.\nDica: Selecione um vendedor válido da lista ou verifique se o vendedor não foi removido.";
                 return false;
             }
-
-            if (!vendedor.Ativo)
-            {
-                mensagemErro = "Não é possível criar meta para vendedor inativo.";
-                return false;
-            }
-
-            // Valida se o produto existe e está ativo
-            var produto = _produtoRepository.GetById(meta.ProdutoId);
-            if (produto == null)
-            {
-                mensagemErro = "Produto não encontrado.";
-                return false;
-            }
-
-            if (!produto.Ativo)
-            {
-                mensagemErro = "Não é possível criar meta para produto inativo.";
-                return false;
-            }
+            // Valida se o produto existe e está ativ
 
             // Valida tipo de meta x produto
             if (!ValidarTipoMetaProduto(meta.TipoMeta, meta.ProdutoId, out mensagemErro))
@@ -115,17 +117,7 @@ namespace CadastroMetasVendedores.Services
             // Valida valor da meta
             if (meta.Valor <= 0)
             {
-                mensagemErro = "O valor da meta deve ser maior que zero.";
-                return false;
-            }
-
-            // Verifica se já existe meta duplicada
-            if (VerificarMetaDuplicada(meta.VendedorId, meta.ProdutoId, meta.TipoMeta,
-                meta.Periodicidade, meta.Id))
-            {
-                mensagemErro = $"Já existe uma meta {ObterDescricaoTipoMeta(meta.TipoMeta)} " +
-                              $"{ObterDescricaoPeriodicidade(meta.Periodicidade).ToLower()} " +
-                              $"para o vendedor {vendedor.Nome} e produto {produto.Nome}.";
+                mensagemErro = "Erro: Valor inválido.\nDetalhe: O valor da meta deve ser maior que zero.\nDica: Digite um valor positivo para a meta.";
                 return false;
             }
 
@@ -139,15 +131,15 @@ namespace CadastroMetasVendedores.Services
             var produto = _produtoRepository.GetById(produtoId);
             if (produto == null)
             {
-                mensagemErro = "Produto não encontrado.";
+                mensagemErro = "Erro: Produto não encontrado.\nDetalhe: O produto selecionado não existe no sistema.\nDica: Selecione um produto válido da lista.";
                 return false;
             }
 
             // Metas em litros só podem ser aplicadas a produtos líquidos (Barris e Garrafas/Latas)
             if (tipoMeta == TipoMeta.Litros && !produto.AceitaMetaLitros())
             {
-                mensagemErro = "Metas em litros só podem ser aplicadas a produtos líquidos " +
-                              "(Barris, Garrafas e Latas).";
+                mensagemErro = "Erro: Tipo de meta incompatível.\nDetalhe: Metas em litros só podem ser aplicadas a produtos líquidos " +
+                              "(Barris, Garrafas e Latas).\nDica: Selecione o tipo 'Monetário' ou 'Unidades' para este produto.";
                 return false;
             }
 
@@ -165,7 +157,7 @@ namespace CadastroMetasVendedores.Services
         {
             var metaOriginal = _metaRepository.GetById(metaId);
             if (metaOriginal == null)
-                throw new InvalidOperationException("Meta não encontrada para duplicação.");
+                throw new InvalidOperationException("Erro: Meta não encontrada.\nDetalhe: A meta que você está tentando duplicar não existe.\nDica: Verifique se a meta não foi removida e tente novamente.");
 
             return _metaRepository.DuplicarMeta(metaId);
         }
@@ -211,10 +203,13 @@ namespace CadastroMetasVendedores.Services
             return _metaRepository.GetByPeriodicidade(periodicidade);
         }
 
-        public bool ValidarCamposObrigatorios(int vendedorId, int produtoId, TipoMeta tipoMeta,
+        public bool ValidarCamposObrigatorios(string nome, int vendedorId, int produtoId, TipoMeta tipoMeta,
             decimal valor, PeriodicidadeMeta periodicidade, out List<string> camposInvalidos)
         {
             camposInvalidos = new List<string>();
+
+            if (string.IsNullOrWhiteSpace(nome))
+                camposInvalidos.Add("Nome da Meta");
 
             if (vendedorId <= 0)
                 camposInvalidos.Add("Vendedor");
@@ -250,6 +245,12 @@ namespace CadastroMetasVendedores.Services
                 default:
                     return valor.ToString("N2");
             }
+        }
+
+        // Método para validar aspas simples
+        private bool ContemAspasSimples(string texto)
+        {
+            return !string.IsNullOrEmpty(texto) && texto.Contains("'");
         }
 
         // Métodos auxiliares para obter descrições

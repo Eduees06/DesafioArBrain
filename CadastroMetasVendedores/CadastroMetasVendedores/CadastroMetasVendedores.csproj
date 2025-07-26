@@ -52,12 +52,19 @@
     <Compile Include="Forms\CadastroMetaForm.Designer.cs">
       <DependentUpon>CadastroMetaForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="Forms\HistoricoOperacoesForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\HistoricoOperacoesForm.Designer.cs">
+      <DependentUpon>HistoricoOperacoesForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="Forms\VisualizacaoMetasForm.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="Forms\VisualizacaoMetasForm.Designer.cs">
       <DependentUpon>VisualizacaoMetasForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="Helpers\ErrorMessageHelper.cs" />
     <Compile Include="Models\Meta.cs" />
     <Compile Include="Models\Produto.cs" />
     <Compile Include="Models\Vendedor.cs" />
@@ -140,6 +147,15 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Assets\Icons\VectorArBrain.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Assets\Icons\SwitchButton_False.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Assets\Icons\SwitchButton_True.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Assets\Icons\icone_historico.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

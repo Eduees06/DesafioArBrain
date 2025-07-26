@@ -9,7 +9,6 @@ namespace CadastroMetasVendedores.Services.Interfaces
         IEnumerable<Produto> ObterTodosProdutos();
         IEnumerable<Produto> ObterProdutosAtivos();
         Produto ObterProdutoPorId(int id);
-        Produto ObterProdutoPorCodigo(string codigo);
 
         // Busca e filtros
         IEnumerable<Produto> ObterProdutosPorTipo(TipoProduto tipo);

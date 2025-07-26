@@ -6,6 +6,8 @@ namespace CadastroMetasVendedores.Models
     {
         public int Id { get; set; }
 
+        public string Nome { get; set; }
+
         public int VendedorId { get; set; }
 
         public int ProdutoId { get; set; }

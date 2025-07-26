@@ -22,10 +22,10 @@ namespace CadastroMetasVendedores.Repositories
         {
             _vendedores = new List<Vendedor>
             {
-                new Vendedor { Id = _nextId++, Nome = "João Silva", Codigo = "V001", Email = "joao@email.com", Telefone = "(11) 99999-0001" },
-                new Vendedor { Id = _nextId++, Nome = "Maria Santos", Codigo = "V002", Email = "maria@email.com", Telefone = "(11) 99999-0002" },
-                new Vendedor { Id = _nextId++, Nome = "Pedro Costa", Codigo = "V003", Email = "pedro@email.com", Telefone = "(11) 99999-0003" },
-                new Vendedor { Id = _nextId++, Nome = "Ana Oliveira", Codigo = "V004", Email = "ana@email.com", Telefone = "(11) 99999-0004" }
+                new Vendedor { Id = _nextId++, Nome = "João Silva", Email = "joao@email.com", Telefone = "(11) 99999-0001" },
+                new Vendedor { Id = _nextId++, Nome = "Maria Santos", Email = "maria@email.com", Telefone = "(11) 99999-0002" },
+                new Vendedor { Id = _nextId++, Nome = "Pedro Costa", Email = "pedro@email.com", Telefone = "(11) 99999-0003" },
+                new Vendedor { Id = _nextId++, Nome = "Ana Oliveira", Email = "ana@email.com", Telefone = "(11) 99999-0004" }
             };
         }
 
@@ -43,7 +43,6 @@ namespace CadastroMetasVendedores.Repositories
             if (vendedor == null) return false;
 
             vendedor.Nome = entity.Nome;
-            vendedor.Codigo = entity.Codigo;
             vendedor.Email = entity.Email;
             vendedor.Telefone = entity.Telefone;
             vendedor.Ativo = entity.Ativo;
@@ -98,11 +97,6 @@ namespace CadastroMetasVendedores.Repositories
             return _vendedores.Any(v => v.Nome.Equals(nome, StringComparison.OrdinalIgnoreCase) && v.Id != excludeId);
         }
 
-        public Vendedor GetByCodigo(string codigo)
-        {
-            return _vendedores.FirstOrDefault(v => v.Codigo.Equals(codigo, StringComparison.OrdinalIgnoreCase));
-        }
-
         public IEnumerable<Vendedor> GetByNome(string nome)
         {
             return _vendedores.Where(v => v.Nome.ToUpper().Contains(nome.ToUpper()));
@@ -116,19 +110,8 @@ namespace CadastroMetasVendedores.Repositories
             var filtroUpper = filtro.ToUpper();
             return _vendedores.Where(v =>
                 v.Nome.ToUpper().Contains(filtroUpper) ||
-                v.Codigo.ToUpper().Contains(filtroUpper) ||
                 v.Email.ToUpper().Contains(filtroUpper))
                 .OrderBy(v => v.Nome);
-        }
-
-        public bool ExistsByCodigo(string codigo)
-        {
-            return _vendedores.Any(v => v.Codigo.Equals(codigo, StringComparison.OrdinalIgnoreCase));
-        }
-
-        public bool ExistsByCodigo(string codigo, int excludeId)
-        {
-            return _vendedores.Any(v => v.Codigo.Equals(codigo, StringComparison.OrdinalIgnoreCase) && v.Id != excludeId);
         }
     }
 }

@@ -3,6 +3,8 @@ using System.Linq;
 using System.Windows.Forms;
 using CadastroMetasVendedores.Models;
 using CadastroMetasVendedores.Services;
+using CadastroMetasVendedores.Helpers;
+using System.Drawing;
 
 namespace CadastroMetasVendedores.Forms
 {
@@ -22,6 +24,7 @@ namespace CadastroMetasVendedores.Forms
             _produtoService = produtoService;
 
             InitializeComponent();
+            ConfigurarEventos();
             CarregarDados();
         }
 
@@ -31,6 +34,56 @@ namespace CadastroMetasVendedores.Forms
         {
             _metaId = metaId;
             CarregarMetaParaEdicao();
+        }
+
+        private void ConfigurarEventos()
+        {
+            // Configurar atalhos
+            this.KeyPreview = true;
+            this.KeyDown += CadastroMetaForm_KeyDown;
+
+            // Configurar eventos para campos obrigatórios
+            txtNome.Enter += Campo_Enter;
+            cmbVendedor.Enter += Campo_Enter;
+            cmbProduto.Enter += Campo_Enter;
+            cmbTipoMeta.Enter += Campo_Enter;
+            cmbPeriodicidade.Enter += Campo_Enter;
+            txtValor.Enter += Campo_Enter;
+
+            // Configurar TabIndex para ordem de navegação
+            txtNome.TabIndex = 0;
+            cmbVendedor.TabIndex = 1;
+            cmbProduto.TabIndex = 2;
+            cmbTipoMeta.TabIndex = 3;
+            cmbPeriodicidade.TabIndex = 4;
+            txtValor.TabIndex = 5;
+            chkAtivo.TabIndex = 6;
+            btnSalvar.TabIndex = 7;
+            btnVoltar.TabIndex = 8;
+        }
+
+        private void CadastroMetaForm_KeyDown(object sender, KeyEventArgs e)
+        {
+            switch (e.KeyCode)
+            {
+                case Keys.F2:
+                    btnSalvar_Click(sender, e);
+                    e.Handled = true;
+                    break;
+                case Keys.Escape:
+                    this.Close();
+                    e.Handled = true;
+                    break;
+            }
+        }
+
+        private void Campo_Enter(object sender, EventArgs e)
+        {
+            Control campo = sender as Control;
+            if (campo != null && campo.BackColor == Color.FromArgb(252, 199, 194))
+            {
+                campo.BackColor = Color.White;
+            }
         }
 
         private void CarregarDados()
@@ -51,8 +104,7 @@ namespace CadastroMetasVendedores.Forms
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Erro ao carregar dados: {ex.Message}", "Erro",
-                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+                ErrorMessageHelper.ExibirErro($"Erro: Falha ao carregar dados.\nDetalhe: {ex.Message}\nDica: Verifique a conexão e tente novamente.");
             }
         }
 
@@ -113,11 +165,12 @@ namespace CadastroMetasVendedores.Forms
                 _metaAtual = _metaService.ObterMetaPorId(_metaId.Value);
                 if (_metaAtual == null)
                 {
-                    MessageBox.Show("Meta não encontrada!", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    ErrorMessageHelper.ExibirErro("Erro: Meta não encontrada.\nDetalhe: A meta selecionada não existe no sistema.\nDica: A meta pode ter sido removida por outro usuário.");
                     Close();
                     return;
                 }
 
+                txtNome.Text = _metaAtual.Nome;
                 cmbVendedor.SelectedValue = _metaAtual.VendedorId;
                 cmbProduto.SelectedValue = _metaAtual.ProdutoId;
 
@@ -151,8 +204,7 @@ namespace CadastroMetasVendedores.Forms
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Erro ao carregar meta: {ex.Message}", "Erro",
-                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+                ErrorMessageHelper.ExibirErro($"Erro: Falha ao carregar meta.\nDetalhe: {ex.Message}\nDica: Verifique se a meta ainda existe e tente novamente.");
             }
         }
 
@@ -160,7 +212,7 @@ namespace CadastroMetasVendedores.Forms
         {
             if (!ValidarCampos(out string mensagemErro))
             {
-                MessageBox.Show(mensagemErro, "Validação", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                ErrorMessageHelper.ExibirErro(mensagemErro);
                 return;
             }
 
@@ -168,24 +220,25 @@ namespace CadastroMetasVendedores.Forms
             {
                 if (!int.TryParse(cmbVendedor.SelectedValue.ToString(), out int vendedorId))
                 {
-                    MessageBox.Show("Erro ao obter ID do vendedor.", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    ErrorMessageHelper.ExibirErro("Erro: ID do vendedor inválido.\nDetalhe: Não foi possível obter o identificador do vendedor.\nDica: Selecione novamente o vendedor.");
                     return;
                 }
 
                 if (!int.TryParse(cmbProduto.SelectedValue.ToString(), out int produtoId))
                 {
-                    MessageBox.Show("Erro ao obter ID do produto.", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    ErrorMessageHelper.ExibirErro("Erro: ID do produto inválido.\nDetalhe: Não foi possível obter o identificador do produto.\nDica: Selecione novamente o produto.");
                     return;
                 }
 
                 var meta = new Meta
                 {
                     Id = _metaId ?? 0,
+                    Nome = txtNome.Text.Trim(),
                     VendedorId = vendedorId,
                     ProdutoId = produtoId,
                     TipoMeta = (TipoMeta)((ComboBoxItem)cmbTipoMeta.SelectedItem).Value,
                     Periodicidade = (PeriodicidadeMeta)((ComboBoxItem)cmbPeriodicidade.SelectedItem).Value,
-                    Valor = decimal.Parse(txtValor.Text),
+                    Valor = decimal.Parse(txtValor.Text.Replace('.', ',')),
                     Ativo = chkAtivo.Checked
                 };
 
@@ -194,22 +247,24 @@ namespace CadastroMetasVendedores.Forms
                 if (_metaId.HasValue)
                 {
                     sucesso = _metaService.AtualizarMeta(meta);
-                    MessageBox.Show(sucesso ? "Meta atualizada com sucesso!" : "Erro ao atualizar meta.",
-                        sucesso ? "Sucesso" : "Erro", MessageBoxButtons.OK,
-                        sucesso ? MessageBoxIcon.Information : MessageBoxIcon.Error);
+                    if (sucesso)
+                    {
+                        MessageBox.Show("Meta atualizada com sucesso!", "Sucesso",
+                            MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    }
                 }
                 else
                 {
                     var novoId = _metaService.CriarMeta(meta);
                     if (novoId > 0)
                     {
-                        MessageBox.Show($"Meta criada com sucesso! ID: {novoId}", "Sucesso",
+                        MessageBox.Show($"Meta '{meta.Nome}' criada com sucesso!", "Sucesso",
                             MessageBoxButtons.OK, MessageBoxIcon.Information);
                         sucesso = true;
                     }
                     else
                     {
-                        MessageBox.Show("Erro ao criar meta.", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        ErrorMessageHelper.ExibirErro("Erro: Falha ao criar meta.\nDetalhe: A operação não foi concluída.\nDica: Verifique os dados e tente novamente.");
                         sucesso = false;
                     }
                 }
@@ -222,53 +277,76 @@ namespace CadastroMetasVendedores.Forms
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Erro ao salvar meta: {ex.Message}", "Erro",
-                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+                ErrorMessageHelper.ExibirErro($"Erro: Falha ao salvar meta.\nDetalhe: {ex.Message}\nDica: Verifique os dados informados e tente novamente.");
             }
         }
 
         private bool ValidarCampos(out string mensagemErro)
         {
             mensagemErro = "";
+            bool camposValidos = true;
+
+            // Resetar cores dos campos
+            txtNome.BackColor = Color.White;
+            cmbVendedor.BackColor = Color.White;
+            cmbProduto.BackColor = Color.White;
+            cmbTipoMeta.BackColor = Color.White;
+            cmbPeriodicidade.BackColor = Color.White;
+            txtValor.BackColor = Color.White;
+
+            if (string.IsNullOrWhiteSpace(txtNome.Text))
+            {
+                mensagemErro = "Erro: Nome da meta obrigatório.\nDetalhe: O campo nome da meta deve ser preenchido.\nDica: Digite um nome descritivo para identificar a meta.";
+                txtNome.BackColor = Color.FromArgb(252, 199, 194);
+                txtNome.Focus();
+                return false;
+            }
 
             if (cmbVendedor.SelectedValue == null)
             {
-                mensagemErro = "Selecione um vendedor.";
+                mensagemErro = "Erro: Vendedor obrigatório.\nDetalhe: É necessário selecionar um vendedor para a meta.\nDica: Escolha um vendedor da lista suspensa.";
+                cmbVendedor.BackColor = Color.FromArgb(252, 199, 194);
                 cmbVendedor.Focus();
                 return false;
             }
 
             if (cmbProduto.SelectedValue == null)
             {
-                mensagemErro = "Selecione um produto.";
+                mensagemErro = "Erro: Produto obrigatório.\nDetalhe: É necessário selecionar um produto para a meta.\nDica: Escolha um produto da lista suspensa.";
+                cmbProduto.BackColor = Color.FromArgb(252, 199, 194);
                 cmbProduto.Focus();
                 return false;
             }
 
             if (cmbTipoMeta.SelectedItem == null)
             {
-                mensagemErro = "Selecione o tipo de meta.";
+                mensagemErro = "Erro: Tipo de meta obrigatório.\nDetalhe: É necessário selecionar o tipo da meta.\nDica: Escolha entre Monetário, Litros ou Unidades.";
+                cmbTipoMeta.BackColor = Color.FromArgb(252, 199, 194);
                 cmbTipoMeta.Focus();
                 return false;
             }
 
             if (cmbPeriodicidade.SelectedItem == null)
             {
-                mensagemErro = "Selecione a periodicidade.";
+                mensagemErro = "Erro: Periodicidade obrigatória.\nDetalhe: É necessário selecionar a periodicidade da meta.\nDica: Escolha entre Diária, Semanal ou Mensal.";
+                cmbPeriodicidade.BackColor = Color.FromArgb(252, 199, 194);
                 cmbPeriodicidade.Focus();
                 return false;
             }
 
             if (string.IsNullOrWhiteSpace(txtValor.Text))
             {
-                mensagemErro = "Informe o valor da meta.";
+                mensagemErro = "Erro: Valor da meta obrigatório.\nDetalhe: É necessário informar o valor da meta.\nDica: Digite um valor numérico maior que zero.";
+                txtValor.BackColor = Color.FromArgb(252, 199, 194);
                 txtValor.Focus();
                 return false;
             }
 
-            if (!decimal.TryParse(txtValor.Text, out decimal valor) || valor <= 0)
+            string valorLimpo = txtValor.Text.Replace('.', ',');
+            if (!decimal.TryParse(valorLimpo, out decimal valor) || valor <= 0)
             {
-                mensagemErro = "Informe um valor válido maior que zero.";
+                mensagemErro = "Erro: Valor inválido.\nDetalhe: O valor da meta deve ser um número maior que zero.\nDica: Digite apenas números e vírgula para decimais.";
+                txtValor.BackColor = Color.FromArgb(252, 199, 194);
                 txtValor.Focus();
                 txtValor.SelectAll();
                 return false;
@@ -285,14 +363,16 @@ namespace CadastroMetasVendedores.Forms
 
         private void txtValor_KeyPress(object sender, KeyPressEventArgs e)
         {
-            // Permite apenas números, vírgula e backspace
-            if (!char.IsControl(e.KeyChar) && !char.IsDigit(e.KeyChar) && e.KeyChar != ',')
+            // Permite apenas números, vírgula, ponto e backspace
+            if (!char.IsControl(e.KeyChar) && !char.IsDigit(e.KeyChar) && e.KeyChar != ',' && e.KeyChar != '.')
             {
                 e.Handled = true;
             }
 
-            // Permite apenas uma vírgula
-            if (e.KeyChar == ',' && (sender as TextBox).Text.IndexOf(',') > -1)
+            // Permite apenas uma vírgula ou ponto
+            TextBox textBox = sender as TextBox;
+            if ((e.KeyChar == ',' || e.KeyChar == '.') &&
+                (textBox.Text.IndexOf(',') > -1 || textBox.Text.IndexOf('.') > -1))
             {
                 e.Handled = true;
             }
@@ -307,6 +387,7 @@ namespace CadastroMetasVendedores.Forms
         {
 
         }
+
         private void btnVoltar_Click(object sender, EventArgs e)
         {
             DialogResult = DialogResult.Cancel;

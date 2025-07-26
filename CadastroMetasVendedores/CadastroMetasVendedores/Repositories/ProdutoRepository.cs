@@ -23,25 +23,25 @@ namespace CadastroMetasVendedores.Repositories
             _produtos = new List<Produto>
             {
                 // Barris
-                new Produto { Id = _nextId++, Nome = "Barril 50L Pilsen", Codigo = "B001", TipoProduto = TipoProduto.Barris,
+                new Produto { Id = _nextId++, Nome = "Barril 50L Pilsen", TipoProduto = TipoProduto.Barris,
                     PrecoUnitario = 250.00m, UnidadeMedida = "L" },
-                new Produto { Id = _nextId++, Nome = "Barril 30L IPA", Codigo = "B002", TipoProduto = TipoProduto.Barris,
+                new Produto { Id = _nextId++, Nome = "Barril 30L IPA", TipoProduto = TipoProduto.Barris,
                     PrecoUnitario = 180.00m, UnidadeMedida = "L" },
                 
                 // Garrafas e Latas
-                new Produto { Id = _nextId++, Nome = "Cerveja Long Neck 355ml", Codigo = "G001", TipoProduto = TipoProduto.GarrafasLatas,
+                new Produto { Id = _nextId++, Nome = "Cerveja Long Neck 355ml", TipoProduto = TipoProduto.GarrafasLatas,
                     PrecoUnitario = 4.50m, UnidadeMedida = "UN" },
-                new Produto { Id = _nextId++, Nome = "Lata 350ml Pilsen", Codigo = "L001", TipoProduto = TipoProduto.GarrafasLatas,
+                new Produto { Id = _nextId++, Nome = "Lata 350ml Pilsen", TipoProduto = TipoProduto.GarrafasLatas,
                     PrecoUnitario = 3.20m, UnidadeMedida = "UN" },
-                new Produto { Id = _nextId++, Nome = "Garrafa 600ml Weiss", Codigo = "G002", TipoProduto = TipoProduto.GarrafasLatas,
+                new Produto { Id = _nextId++, Nome = "Garrafa 600ml Weiss", TipoProduto = TipoProduto.GarrafasLatas,
                     PrecoUnitario = 6.80m, UnidadeMedida = "UN" },
                 
                 // Acessórios e Produtos
-                new Produto { Id = _nextId++, Nome = "Copo Personalizado 300ml", Codigo = "A001", TipoProduto = TipoProduto.AcessoriosProdutos,
+                new Produto { Id = _nextId++, Nome = "Copo Personalizado 300ml", TipoProduto = TipoProduto.AcessoriosProdutos,
                     PrecoUnitario = 12.00m, UnidadeMedida = "UN" },
-                new Produto { Id = _nextId++, Nome = "Abridor de Garrafa", Codigo = "A002", TipoProduto = TipoProduto.AcessoriosProdutos,
+                new Produto { Id = _nextId++, Nome = "Abridor de Garrafa", TipoProduto = TipoProduto.AcessoriosProdutos,
                     PrecoUnitario = 15.00m, UnidadeMedida = "UN" },
-                new Produto { Id = _nextId++, Nome = "Bolacha de Chopp", Codigo = "A003", TipoProduto = TipoProduto.AcessoriosProdutos,
+                new Produto { Id = _nextId++, Nome = "Bolacha de Chopp", TipoProduto = TipoProduto.AcessoriosProdutos,
                     PrecoUnitario = 2.50m, UnidadeMedida = "UN" }
             };
         }
@@ -60,7 +60,6 @@ namespace CadastroMetasVendedores.Repositories
             if (produto == null) return false;
 
             produto.Nome = entity.Nome;
-            produto.Codigo = entity.Codigo;
             produto.TipoProduto = entity.TipoProduto;
             produto.PrecoUnitario = entity.PrecoUnitario;
             produto.UnidadeMedida = entity.UnidadeMedida;
@@ -116,11 +115,6 @@ namespace CadastroMetasVendedores.Repositories
             return _produtos.Any(p => p.Nome.Equals(nome, StringComparison.OrdinalIgnoreCase) && p.Id != excludeId);
         }
 
-        public Produto GetByCodigo(string codigo)
-        {
-            return _produtos.FirstOrDefault(p => p.Codigo.Equals(codigo, StringComparison.OrdinalIgnoreCase));
-        }
-
         public IEnumerable<Produto> GetByTipo(TipoProduto tipo)
         {
             return _produtos.Where(p => p.TipoProduto == tipo && p.Ativo).OrderBy(p => p.Nome);
@@ -138,19 +132,8 @@ namespace CadastroMetasVendedores.Repositories
 
             var filtroUpper = filtro.ToUpper();
             return _produtos.Where(p =>
-                p.Nome.ToUpper().Contains(filtroUpper) ||
-                p.Codigo.ToUpper().Contains(filtroUpper))
+                p.Nome.ToUpper().Contains(filtroUpper))
                 .OrderBy(p => p.Nome);
-        }
-
-        public bool ExistsByCodigo(string codigo)
-        {
-            return _produtos.Any(p => p.Codigo.Equals(codigo, StringComparison.OrdinalIgnoreCase));
-        }
-
-        public bool ExistsByCodigo(string codigo, int excludeId)
-        {
-            return _produtos.Any(p => p.Codigo.Equals(codigo, StringComparison.OrdinalIgnoreCase) && p.Id != excludeId);
         }
     }
 }

@@ -123,6 +123,16 @@ namespace CadastroMetasVendedores.Properties {
         /// <summary>
         ///   Consulta um recurso localizado do tipo System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap icone_historico {
+            get {
+                object obj = ResourceManager.GetObject("icone_historico", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta um recurso localizado do tipo System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap icone_novo {
             get {
                 object obj = ResourceManager.GetObject("icone_novo", resourceCulture);
@@ -176,6 +186,26 @@ namespace CadastroMetasVendedores.Properties {
         internal static System.Drawing.Bitmap icone_voltar {
             get {
                 object obj = ResourceManager.GetObject("icone_voltar", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta um recurso localizado do tipo System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap SwitchButton_False {
+            get {
+                object obj = ResourceManager.GetObject("SwitchButton_False", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Consulta um recurso localizado do tipo System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap SwitchButton_True {
+            get {
+                object obj = ResourceManager.GetObject("SwitchButton_True", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }

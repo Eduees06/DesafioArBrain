@@ -9,8 +9,6 @@ namespace CadastroMetasVendedores.Models
 
         public string Nome { get; set; }
 
-        public string Codigo { get; set; }
-
         public TipoProduto TipoProduto { get; set; }
 
         public decimal PrecoUnitario { get; set; }

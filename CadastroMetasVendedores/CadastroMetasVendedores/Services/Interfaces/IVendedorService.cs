@@ -9,7 +9,6 @@ namespace CadastroMetasVendedores.Services.Interfaces
         IEnumerable<Vendedor> ObterTodosVendedores();
         IEnumerable<Vendedor> ObterVendedoresAtivos();
         Vendedor ObterVendedorPorId(int id);
-        Vendedor ObterVendedorPorCodigo(string codigo);
 
         // Busca e filtros
         IEnumerable<Vendedor> ObterVendedoresPorNome(string nome);

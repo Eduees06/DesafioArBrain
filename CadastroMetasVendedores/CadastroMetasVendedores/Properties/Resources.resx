@@ -136,6 +136,9 @@
   <data name="icone_excluir" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Assets\Icons\icone_excluir.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <data name="icone_historico" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Assets\Icons\icone_historico.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
   <data name="icone_novo" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Assets\Icons\icone_novo.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
@@ -153,6 +156,12 @@
   </data>
   <data name="icone_voltar" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Assets\Icons\icone_voltar.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="SwitchButton_False" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Assets\Icons\SwitchButton_False.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="SwitchButton_True" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Assets\Icons\SwitchButton_True.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="VectorArBrain" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Assets\Icons\VectorArBrain.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
