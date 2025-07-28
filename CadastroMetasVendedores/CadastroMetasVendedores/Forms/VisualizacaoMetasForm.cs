@@ -1,11 +1,12 @@
-﻿using System;
+﻿using CadastroMetasVendedores.Models;
+using CadastroMetasVendedores.Services;
+using CadastroMetasVendedores.Services.Interfaces;
+using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.IO;
 using System.Linq;
 using System.Windows.Forms;
-using CadastroMetasVendedores.Models;
-using CadastroMetasVendedores.Services;
-using System.IO;
 
 namespace CadastroMetasVendedores.Forms
 {
@@ -14,9 +15,11 @@ namespace CadastroMetasVendedores.Forms
         private readonly MetaService _metaService;
         private readonly VendedorService _vendedorService;
         private readonly ProdutoService _produtoService;
-        private bool _toggleState = false; // Estado do interruptor
-        private List<string> _filtrosAtivos = new List<string>(); // Lista de filtros ativos
-        private List<HistoricoOperacao> _historicoOperacoes = new List<HistoricoOperacao>(); // Histórico de operações
+        private bool _toggleState = false;
+        private readonly List<string> _filtrosAtivos = new List<string>();
+        private List<HistoricoOperacao> _historicoOperacoes = new List<HistoricoOperacao>();
+        private string _ultimaColunaOrdenada = "";
+        private bool _ordemCrescente = true;
 
         public VisualizacaoMetasForm(MetaService metaService, VendedorService vendedorService, ProdutoService produtoService)
         {
@@ -34,10 +37,8 @@ namespace CadastroMetasVendedores.Forms
 
         private void ConfigurarEventos()
         {
-            // Eventos de teclado
             this.KeyDown += VisualizacaoMetasForm_KeyDown;
 
-            // Eventos dos botões
             btnExcluir.Click += BtnExcluir_Click;
             btnBuscar.Click += BtnBuscar_Click;
             btnEditar.Click += BtnEditar_Click;
@@ -47,17 +48,13 @@ namespace CadastroMetasVendedores.Forms
             btnLimparFiltros.Click += BtnLimparFiltros_Click;
             btnHistorico.Click += BtnHistorico_Click;
 
-            // Eventos da busca
             txtBusca.KeyPress += TxtBusca_KeyPress;
 
-            // Eventos do DataGridView
             dgvMetas.CellDoubleClick += DgvMetas_CellDoubleClick;
             dgvMetas.ColumnHeaderMouseClick += DgvMetas_ColumnHeaderMouseClick;
 
-            // Evento do painel de fundo
             pnlBackground.Paint += PnlBackground_Paint;
 
-            // Adicionar efeitos hover aos botões
             AddHoverEffects();
         }
 
@@ -92,11 +89,10 @@ namespace CadastroMetasVendedores.Forms
         {
             try
             {
-                using (var historicoForm = new HistoricoOperacoesForm(_historicoOperacoes, _metaService))
+                using (var historicoForm = new HistoricoOperacoesForm1(_historicoOperacoes, _metaService))
                 {
                     if (historicoForm.ShowDialog() == DialogResult.OK)
                     {
-                        // Recarregar dados se alguma operação foi revertida
                         CarregarDados();
                     }
                 }
@@ -120,12 +116,11 @@ namespace CadastroMetasVendedores.Forms
                 VendedorNome = meta.Vendedor?.Nome ?? "N/A",
                 ProdutoNome = meta.Produto?.Nome ?? "N/A",
                 Descricao = descricao ?? $"{tipo} realizada em {DateTime.Now:dd/MM/yyyy HH:mm:ss}",
-                DadosMeta = CloneMeta(meta) // Salvar cópia dos dados da meta
+                DadosMeta = CloneMeta(meta)
             };
 
-            _historicoOperacoes.Insert(0, operacao); // Inserir no início da lista
+            _historicoOperacoes.Insert(0, operacao);
 
-            // Manter apenas os últimos 100 registros
             if (_historicoOperacoes.Count > 100)
             {
                 _historicoOperacoes.RemoveRange(100, _historicoOperacoes.Count - 100);
@@ -162,7 +157,6 @@ namespace CadastroMetasVendedores.Forms
             try
             {
                 int metaId = Convert.ToInt32(dgvMetas.SelectedRows[0].Cells["Id"].Value);
-                // Busca a meta original pela lista de todas as metas
                 var metaOriginal = _metaService.ObterTodasMetas().FirstOrDefault(m => m.Id == metaId);
 
                 if (metaOriginal == null)
@@ -172,7 +166,6 @@ namespace CadastroMetasVendedores.Forms
                     return;
                 }
 
-                // Criar nova meta baseada na original
                 var novaMeta = new Meta
                 {
                     Nome = metaOriginal.Nome + " (Cópia)",
@@ -190,7 +183,6 @@ namespace CadastroMetasVendedores.Forms
 
                 if (sucesso)
                 {
-                    // Buscar a meta criada para adicionar ao histórico
                     var metaCriada = _metaService.ObterTodasMetas().FirstOrDefault(m => m.Id == resultado);
                     if (metaCriada != null)
                     {
@@ -274,34 +266,108 @@ namespace CadastroMetasVendedores.Forms
             if (dgvMetas.DataSource == null) return;
 
             string columnName = dgvMetas.Columns[e.ColumnIndex].Name;
-            var dataSource = dgvMetas.DataSource as System.Collections.Generic.List<object>;
 
-            if (dataSource == null) return;
+            if (_ultimaColunaOrdenada == columnName)
+            {
+                _ordemCrescente = !_ordemCrescente;
+            }
+            else
+            {
+                _ultimaColunaOrdenada = columnName;
+                _ordemCrescente = true;
+            }
 
+            OrdenarDados(columnName, _ordemCrescente);
+            AtualizarIndicadorOrdenacao(columnName, _ordemCrescente);
+        }
+
+        private void OrdenarDados(string columnName, bool crescente)
+        {
             try
             {
-                var sortedData = dataSource.OrderBy(item =>
+                var metas = _toggleState ?
+                    _metaService.ObterTodasMetas() :
+                    _metaService.ObterMetasAtivas();
+
+                if (_filtrosAtivos.Any())
                 {
-                    var property = item.GetType().GetProperty(columnName);
-                    var value = property?.GetValue(item);
+                    metas = AplicarFiltrosNasMetas(metas);
+                }
 
-                    // Tratamento especial para diferentes tipos
-                    if (value is DateTime dt)
-                        return (object)dt;
-                    if (value is decimal dec)
-                        return (object)dec;
-                    if (value is int i)
-                        return (object)i;
+                IEnumerable<Meta> metasOrdenadas;
 
-                    return (object)(value?.ToString() ?? "");
-                }).ToList();
+                // Substituindo switch expressions por switch tradicional
+                switch (columnName)
+                {
+                    case "Nome":
+                        metasOrdenadas = crescente ?
+                            metas.OrderBy(m => m.Nome ?? "") :
+                            metas.OrderByDescending(m => m.Nome ?? "");
+                        break;
+                    case "Vendedor":
+                        metasOrdenadas = crescente ?
+                            metas.OrderBy(m => m.Vendedor?.Nome ?? "") :
+                            metas.OrderByDescending(m => m.Vendedor?.Nome ?? "");
+                        break;
+                    case "Produto":
+                        metasOrdenadas = crescente ?
+                            metas.OrderBy(m => m.Produto?.Nome ?? "") :
+                            metas.OrderByDescending(m => m.Produto?.Nome ?? "");
+                        break;
+                    case "TipoMeta":
+                        metasOrdenadas = crescente ?
+                            metas.OrderBy(m => ObterDescricaoTipoMeta(m.TipoMeta)) :
+                            metas.OrderByDescending(m => ObterDescricaoTipoMeta(m.TipoMeta));
+                        break;
+                    case "Valor":
+                        metasOrdenadas = crescente ?
+                            metas.OrderBy(m => m.Valor) :
+                            metas.OrderByDescending(m => m.Valor);
+                        break;
+                    case "Periodicidade":
+                        metasOrdenadas = crescente ?
+                            metas.OrderBy(m => ObterDescricaoPeriodicidade(m.Periodicidade)) :
+                            metas.OrderByDescending(m => ObterDescricaoPeriodicidade(m.Periodicidade));
+                        break;
+                    case "DataCriacao":
+                        metasOrdenadas = crescente ?
+                            metas.OrderBy(m => m.DataCriacao) :
+                            metas.OrderByDescending(m => m.DataCriacao);
+                        break;
+                    case "Status":
+                        metasOrdenadas = crescente ?
+                            metas.OrderBy(m => m.Ativo ? "Ativo" : "Inativo") :
+                            metas.OrderByDescending(m => m.Ativo ? "Ativo" : "Inativo");
+                        break;
+                    default:
+                        metasOrdenadas = metas;
+                        break;
+                }
 
-                dgvMetas.DataSource = sortedData;
-                ConfigurarColunas();
+                CarregarGrid(metasOrdenadas);
+                AtualizarTotalRegistros(metasOrdenadas.Count());
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Erro ao ordenar: {ex.Message}");
+                MessageBox.Show($"Erro ao ordenar dados: {ex.Message}", "Erro",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private void AtualizarIndicadorOrdenacao(string columnName, bool crescente)
+        {
+            foreach (DataGridViewColumn col in dgvMetas.Columns)
+            {
+                if (col.HeaderText.EndsWith(" ↑") || col.HeaderText.EndsWith(" ↓"))
+                {
+                    col.HeaderText = col.HeaderText.Substring(0, col.HeaderText.Length - 2);
+                }
+            }
+
+            if (dgvMetas.Columns[columnName] != null)
+            {
+                string indicador = crescente ? " ↑" : " ↓";
+                dgvMetas.Columns[columnName].HeaderText += indicador;
             }
         }
 
@@ -314,7 +380,6 @@ namespace CadastroMetasVendedores.Forms
             {
                 Image switchImage = null;
 
-                // Carregar imagem do Resources
                 if (_toggleState)
                 {
                     try { switchImage = Properties.Resources.SwitchButton_True; } catch { }
@@ -326,12 +391,10 @@ namespace CadastroMetasVendedores.Forms
 
                 if (switchImage != null)
                 {
-                    // Desenhar a imagem redimensionada para caber no painel
                     g.DrawImage(switchImage, 0, 0, panel.Width, panel.Height);
                 }
                 else
                 {
-                    // Fallback: desenhar switch customizado se as imagens não estiverem disponíveis
                     Rectangle rect = new Rectangle(0, 0, panel.Width - 1, panel.Height - 1);
                     Color bgColor = _toggleState ? Color.FromArgb(255, 197, 36) : Color.FromArgb(200, 200, 200);
 
@@ -340,7 +403,6 @@ namespace CadastroMetasVendedores.Forms
                         g.FillRoundedRectangle(brush, rect, 8);
                     }
 
-                    // Desenhar a bolinha do interruptor
                     int circleSize = panel.Height - 4;
                     int circleX = _toggleState ? panel.Width - circleSize - 2 : 2;
                     int circleY = 2;
@@ -366,116 +428,92 @@ namespace CadastroMetasVendedores.Forms
         private void PnlToggleSlider_Click(object sender, EventArgs e)
         {
             _toggleState = !_toggleState;
-            pnlToggleSlider.Invalidate(); // Redesenha o controle
+            pnlToggleSlider.Invalidate();
             CarregarDados();
+        }
+
+        private void CarregarGrid(System.Collections.Generic.IEnumerable<Meta> metas)
+        {
+            dgvMetas.DataSource = null;
+
+            if (!metas.Any())
+            {
+                lblMensagemVazia.Visible = true;
+                dgvMetas.Visible = false;
+                return;
+            }
+
+            lblMensagemVazia.Visible = false;
+            dgvMetas.Visible = true;
+
+            var dadosGrid = metas.Select(m => new
+            {
+                m.Id,
+                Nome = m.Nome ?? "N/A",
+                Vendedor = m.Vendedor?.Nome ?? "N/A",
+                Produto = m.Produto?.Nome ?? "N/A",
+                TipoMeta = ObterDescricaoTipoMeta(m.TipoMeta),
+                Valor = _metaService.FormatarValorMeta(m.Valor, m.TipoMeta),
+                Periodicidade = ObterDescricaoPeriodicidade(m.Periodicidade),
+                DataCriacao = m.DataCriacao.ToString("dd/MM/yyyy HH:mm:ss"),
+                Status = m.Ativo ? "Ativo" : "Inativo"
+            }).ToList();
+
+            dgvMetas.DataSource = dadosGrid;
+            ConfigurarColunas();
+
+            foreach (DataGridViewRow row in dgvMetas.Rows)
+            {
+                if (row.Cells["Status"].Value?.ToString() == "Inativo")
+                {
+                    row.DefaultCellStyle.ForeColor = Color.Gray;
+                }
+            }
+
+            // Configurar cursor de mãozinha nos cabeçalhos
+            dgvMetas.ColumnHeadersDefaultCellStyle.SelectionBackColor = Color.FromArgb(71, 87, 105);
+            dgvMetas.EnableHeadersVisualStyles = false;
         }
 
         private void AddHoverEffects()
         {
-            // Efeito hover para btnExcluir
             btnExcluir.MouseEnter += (s, e) => btnExcluir.BackColor = Color.FromArgb(255, 92, 92);
             btnExcluir.MouseLeave += (s, e) => btnExcluir.BackColor = Color.FromArgb(255, 72, 72);
 
-            // Efeito hover para btnBuscar
             btnBuscar.MouseEnter += (s, e) => btnBuscar.BackColor = Color.FromArgb(40, 140, 140);
             btnBuscar.MouseLeave += (s, e) => btnBuscar.BackColor = Color.DarkCyan;
 
-            // Efeito hover para btnEditar
             btnEditar.MouseEnter += (s, e) => btnEditar.BackColor = Color.FromArgb(71, 87, 105);
             btnEditar.MouseLeave += (s, e) => btnEditar.BackColor = Color.FromArgb(51, 67, 85);
 
-            // Efeito hover para btnVoltar
             btnVoltar.MouseEnter += (s, e) => btnVoltar.BackColor = Color.FromArgb(71, 87, 105);
             btnVoltar.MouseLeave += (s, e) => btnVoltar.BackColor = Color.FromArgb(51, 67, 85);
 
-            // Efeito hover para btnAdicionar
             btnAdicionar.MouseEnter += (s, e) => btnAdicionar.BackColor = Color.FromArgb(43, 201, 48);
             btnAdicionar.MouseLeave += (s, e) => btnAdicionar.BackColor = Color.FromArgb(23, 181, 28);
 
-            // Efeito hover para btnDuplicar
             btnDuplicar.MouseEnter += (s, e) => btnDuplicar.BackColor = Color.FromArgb(71, 87, 105);
             btnDuplicar.MouseLeave += (s, e) => btnDuplicar.BackColor = Color.FromArgb(51, 67, 85);
 
-            // Efeito hover para btnLimparFiltros
             btnLimparFiltros.MouseEnter += (s, e) => btnLimparFiltros.BackColor = Color.FromArgb(71, 87, 105);
             btnLimparFiltros.MouseLeave += (s, e) => btnLimparFiltros.BackColor = Color.FromArgb(51, 67, 85);
 
-            // Efeito hover para btnHistorico
             btnHistorico.MouseEnter += (s, e) => btnHistorico.BackColor = Color.FromArgb(71, 87, 105);
             btnHistorico.MouseLeave += (s, e) => btnHistorico.BackColor = Color.FromArgb(51, 67, 85);
-        }
-
-        private void SetButtonIcons()
-        {
-            SetButtonIcon(btnExcluir, "icone_excluir.png", ContentAlignment.MiddleRight);
-            SetButtonIcon(btnBuscar, "icone_buscar.png", ContentAlignment.MiddleRight);
-            SetButtonIcon(btnEditar, "icone_editar.png", ContentAlignment.MiddleRight);
-            SetButtonIcon(btnAdicionar, "icone_adicionar.png", ContentAlignment.MiddleRight);
-            SetButtonIcon(btnVoltar, "icone_voltar.png", ContentAlignment.MiddleLeft);
-            SetButtonIcon(btnDuplicar, "icone_duplicar.png", ContentAlignment.MiddleRight);
-            SetButtonIcon(btnHistorico, "icone_historico.png", ContentAlignment.MiddleRight);
         }
 
         private void SetButtonIcon(Button button, string iconResourceName, ContentAlignment alignment)
         {
             try
             {
-                Image icon = null;
-
-                // Tenta carregar do Resources primeiro
-                switch (iconResourceName)
-                {
-                    case "icone_buscar.png":
-                        try { icon = Properties.Resources.icone_buscar; } catch { }
-                        break;
-                    case "icone_adicionar.png":
-                        try { icon = Properties.Resources.icone_adicionar; } catch { }
-                        break;
-                    case "icone_voltar.png":
-                        try { icon = Properties.Resources.icone_voltar; } catch { }
-                        break;
-                    case "icone_excluir.png":
-                        try { icon = Properties.Resources.icone_excluir; } catch { }
-                        break;
-                    case "icone_editar.png":
-                        try { icon = Properties.Resources.icone_editar; } catch { }
-                        break;
-                    case "icone_duplicar.png":
-                        try { icon = Properties.Resources.icone_duplicar; } catch { }
-                        break;
-                    case "icone_historico.png":
-                        try { icon = Properties.Resources.icone_historico; } catch { }
-                        break;
-                }
-
-                // Se não encontrou no Resources, tenta nos arquivos
-                if (icon == null)
-                {
-                    string[] possiblePaths = {
-                        Path.Combine(Application.StartupPath, "Assets", "Icons", iconResourceName),
-                        Path.Combine(Directory.GetCurrentDirectory(), "Assets", "Icons", iconResourceName),
-                        Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets", "Icons", iconResourceName),
-                        Path.Combine(Environment.CurrentDirectory, "Assets", "Icons", iconResourceName)
-                    };
-
-                    foreach (string path in possiblePaths)
-                    {
-                        if (File.Exists(path))
-                        {
-                            icon = Image.FromFile(path);
-                            break;
-                        }
-                    }
-                }
+                Image icon = GetIconFromResources(iconResourceName) ?? GetIconFromFile(iconResourceName);
 
                 if (icon != null)
                 {
-                    // Redimensiona o ícone proporcionalmente
                     Image resizedIcon = new Bitmap(icon, new Size(16, 16));
                     button.Image = resizedIcon;
                     button.ImageAlign = alignment;
 
-                    // Ajusta o espaçamento entre texto e ícone para centralização
                     if (alignment == ContentAlignment.MiddleLeft)
                     {
                         button.TextImageRelation = TextImageRelation.ImageBeforeText;
@@ -494,20 +532,75 @@ namespace CadastroMetasVendedores.Forms
             }
         }
 
+        private Image GetIconFromResources(string iconResourceName)
+        {
+            try
+            {
+                // Substituindo switch expression por switch tradicional
+                switch (iconResourceName)
+                {
+                    case "icone_buscar.png":
+                        return Properties.Resources.icone_buscar;
+                    case "icone_adicionar.png":
+                        return Properties.Resources.icone_adicionar;
+                    case "icone_voltar.png":
+                        return Properties.Resources.icone_voltar;
+                    case "icone_excluir.png":
+                        return Properties.Resources.icone_excluir;
+                    case "icone_editar.png":
+                        return Properties.Resources.icone_editar;
+                    case "icone_duplicar.png":
+                        return Properties.Resources.icone_duplicar;
+                    case "icone_historico.png":
+                        return Properties.Resources.icone_historico;
+                    default:
+                        return null;
+                }
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
+        private Image GetIconFromFile(string iconResourceName)
+        {
+            string[] possiblePaths = {
+                Path.Combine(Application.StartupPath, "Assets", "Icons", iconResourceName),
+                Path.Combine(Directory.GetCurrentDirectory(), "Assets", "Icons", iconResourceName),
+                Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets", "Icons", iconResourceName),
+                Path.Combine(Environment.CurrentDirectory, "Assets", "Icons", iconResourceName)
+            };
+
+            foreach (string path in possiblePaths)
+            {
+                if (File.Exists(path))
+                {
+                    return Image.FromFile(path);
+                }
+            }
+            return null;
+        }
+
+        private void SetButtonIcons()
+        {
+            SetButtonIcon(btnExcluir, "icone_excluir.png", ContentAlignment.MiddleRight);
+            SetButtonIcon(btnBuscar, "icone_buscar.png", ContentAlignment.MiddleRight);
+            SetButtonIcon(btnEditar, "icone_editar.png", ContentAlignment.MiddleRight);
+            SetButtonIcon(btnAdicionar, "icone_adicionar.png", ContentAlignment.MiddleRight);
+            SetButtonIcon(btnVoltar, "icone_voltar.png", ContentAlignment.MiddleLeft);
+            SetButtonIcon(btnDuplicar, "icone_duplicar.png", ContentAlignment.MiddleRight);
+            SetButtonIcon(btnHistorico, "icone_historico.png", ContentAlignment.MiddleRight);
+        }
+
         private void LoadLogo()
         {
             try
             {
                 Image logo = null;
 
-                // Tenta carregar do Resources primeiro
-                try
-                {
-                    logo = Properties.Resources.VectorArBrain;
-                }
-                catch { }
+                try { logo = Properties.Resources.VectorArBrain; } catch { }
 
-                // Se não encontrou no Resources, tenta nos arquivos
                 if (logo == null)
                 {
                     string[] possiblePaths = {
@@ -531,10 +624,6 @@ namespace CadastroMetasVendedores.Forms
                 {
                     picLogo.Image = logo;
                 }
-                else
-                {
-                    System.Diagnostics.Debug.WriteLine("Logo não encontrada: VectorArBrain.png");
-                }
             }
             catch (Exception ex)
             {
@@ -545,7 +634,7 @@ namespace CadastroMetasVendedores.Forms
         private void PnlBackground_Paint(object sender, PaintEventArgs e)
         {
             Panel panel = sender as Panel;
-            using (Pen pen = new Pen(Color.FromArgb(255, 197, 36), 2)) // #ffc524
+            using (Pen pen = new Pen(Color.FromArgb(255, 197, 36), 2))
             {
                 e.Graphics.DrawRectangle(pen, 0, 0, panel.Width - 1, panel.Height - 1);
             }
@@ -587,7 +676,7 @@ namespace CadastroMetasVendedores.Forms
                     ObterDescricaoTipoMeta(m.TipoMeta).ToUpper().Contains(filtro.ToUpper()) ||
                     ObterDescricaoPeriodicidade(m.Periodicidade).ToUpper().Contains(filtro.ToUpper()) ||
                     _metaService.FormatarValorMeta(m.Valor, m.TipoMeta).ToUpper().Contains(filtro.ToUpper()) ||
-                    m.DataCriacao.ToString("dd/MM/yyyy").Contains(filtro) ||
+                    m.DataCriacao.ToString("dd/MM/yyyy HH:mm:ss").Contains(filtro) ||
                     (m.Ativo ? "Ativo" : "Inativo").ToUpper().Contains(filtro.ToUpper())
                 );
             }
@@ -595,98 +684,41 @@ namespace CadastroMetasVendedores.Forms
             return metasFiltradas;
         }
 
-        private void CarregarGrid(System.Collections.Generic.IEnumerable<Meta> metas)
-        {
-            dgvMetas.DataSource = null;
-
-            if (!metas.Any())
-            {
-                lblMensagemVazia.Visible = true;
-                dgvMetas.Visible = false;
-                return;
-            }
-
-            lblMensagemVazia.Visible = false;
-            dgvMetas.Visible = true;
-
-            var dadosGrid = metas.Select(m => new
-            {
-                Id = m.Id,
-                Nome = m.Nome ?? "N/A",
-                Vendedor = m.Vendedor?.Nome ?? "N/A",
-                Produto = m.Produto?.Nome ?? "N/A",
-                TipoMeta = ObterDescricaoTipoMeta(m.TipoMeta),
-                Valor = _metaService.FormatarValorMeta(m.Valor, m.TipoMeta),
-                Periodicidade = ObterDescricaoPeriodicidade(m.Periodicidade),
-                DataCriacao = m.DataCriacao.ToString("dd/MM/yyyy"),
-                Status = m.Ativo ? "Ativo" : "Inativo"
-            }).ToList();
-
-            dgvMetas.DataSource = dadosGrid;
-            ConfigurarColunas();
-
-            // Colorir linhas inativas
-            foreach (DataGridViewRow row in dgvMetas.Rows)
-            {
-                if (row.Cells["Status"].Value?.ToString() == "Inativo")
-                {
-                    row.DefaultCellStyle.ForeColor = Color.Gray;
-                }
-            }
-        }
-
         private void ConfigurarColunas()
         {
-            // Configurar colunas
-            if (dgvMetas.Columns["Id"] != null)
-                dgvMetas.Columns["Id"].Visible = false;
-
-            if (dgvMetas.Columns["Nome"] != null)
+            var colunas = new Dictionary<string, (string header, int width)>
             {
-                dgvMetas.Columns["Nome"].HeaderText = "Nome da Meta";
-                dgvMetas.Columns["Nome"].Width = 150;
-            }
+                ["Id"] = ("", 0),
+                ["Nome"] = ("Nome da Meta", 150),
+                ["Vendedor"] = ("Vendedor", 120),
+                ["Produto"] = ("Produto", 120),
+                ["TipoMeta"] = ("Tipo", 80),
+                ["Valor"] = ("Valor", 100),
+                ["Periodicidade"] = ("Periodicidade", 100),
+                ["DataCriacao"] = ("Data Criação", 130),
+                ["Status"] = ("Status", 70)
+            };
 
-            if (dgvMetas.Columns["Vendedor"] != null)
+            foreach (var coluna in colunas)
             {
-                dgvMetas.Columns["Vendedor"].HeaderText = "Vendedor";
-                dgvMetas.Columns["Vendedor"].Width = 120;
-            }
+                string key = coluna.Key;
+                string header = coluna.Value.header;
+                int width = coluna.Value.width;
 
-            if (dgvMetas.Columns["Produto"] != null)
-            {
-                dgvMetas.Columns["Produto"].HeaderText = "Produto";
-                dgvMetas.Columns["Produto"].Width = 120;
-            }
-
-            if (dgvMetas.Columns["TipoMeta"] != null)
-            {
-                dgvMetas.Columns["TipoMeta"].HeaderText = "Tipo";
-                dgvMetas.Columns["TipoMeta"].Width = 80;
-            }
-
-            if (dgvMetas.Columns["Valor"] != null)
-            {
-                dgvMetas.Columns["Valor"].HeaderText = "Valor";
-                dgvMetas.Columns["Valor"].Width = 100;
-            }
-
-            if (dgvMetas.Columns["Periodicidade"] != null)
-            {
-                dgvMetas.Columns["Periodicidade"].HeaderText = "Periodicidade";
-                dgvMetas.Columns["Periodicidade"].Width = 100;
-            }
-
-            if (dgvMetas.Columns["DataCriacao"] != null)
-            {
-                dgvMetas.Columns["DataCriacao"].HeaderText = "Data Criação";
-                dgvMetas.Columns["DataCriacao"].Width = 90;
-            }
-
-            if (dgvMetas.Columns["Status"] != null)
-            {
-                dgvMetas.Columns["Status"].HeaderText = "Status";
-                dgvMetas.Columns["Status"].Width = 70;
+                if (dgvMetas.Columns[key] != null)
+                {
+                    dgvMetas.Columns[key].HeaderText = header;
+                    dgvMetas.Columns[key].Width = width;
+                    dgvMetas.Columns[key].Visible = key != "Id";
+                    if (key == "Valor")
+                    {
+                        dgvMetas.Columns[key].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
+                    }
+                    else if (key == "DataCriacao")
+                    {
+                        dgvMetas.Columns[key].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight; //
+                    }
+                }
             }
         }
 
@@ -703,10 +735,14 @@ namespace CadastroMetasVendedores.Forms
         {
             switch (tipoMeta)
             {
-                case TipoMeta.Monetario: return "Monetário";
-                case TipoMeta.Litros: return "Litros";
-                case TipoMeta.Unidades: return "Unidades";
-                default: return "Desconhecido";
+                case TipoMeta.Monetario:
+                    return "Monetário";
+                case TipoMeta.Litros:
+                    return "Litros";
+                case TipoMeta.Unidades:
+                    return "Unidades";
+                default:
+                    return "Desconhecido";
             }
         }
 
@@ -714,10 +750,14 @@ namespace CadastroMetasVendedores.Forms
         {
             switch (periodicidade)
             {
-                case PeriodicidadeMeta.Diaria: return "Diária";
-                case PeriodicidadeMeta.Semanal: return "Semanal";
-                case PeriodicidadeMeta.Mensal: return "Mensal";
-                default: return "Desconhecida";
+                case PeriodicidadeMeta.Diaria:
+                    return "Diária";
+                case PeriodicidadeMeta.Semanal:
+                    return "Semanal";
+                case PeriodicidadeMeta.Mensal:
+                    return "Mensal";
+                default:
+                    return "Desconhecida";
             }
         }
 
@@ -729,7 +769,6 @@ namespace CadastroMetasVendedores.Forms
                 {
                     if (form.ShowDialog() == DialogResult.OK)
                     {
-                        // Buscar a meta recém-criada para adicionar ao histórico
                         var metas = _metaService.ObterTodasMetas().OrderByDescending(m => m.DataCriacao).FirstOrDefault();
                         if (metas != null)
                         {
@@ -754,24 +793,42 @@ namespace CadastroMetasVendedores.Forms
                     MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
-
             try
             {
                 int metaId = Convert.ToInt32(dgvMetas.SelectedRows[0].Cells["Id"].Value);
 
-                // Salvar estado antes da edição
-                var metaAntes = _metaService.ObterTodasMetas().FirstOrDefault(m => m.Id == metaId);
+                var metaOriginal = _metaService.ObterTodasMetas().FirstOrDefault(m => m.Id == metaId);
+                if (metaOriginal == null)
+                {
+                    MessageBox.Show("Meta não encontrada.", "Erro",
+                        MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return;
+                }
+
+                var vendedorOriginal = metaOriginal.Vendedor ?? _vendedorService.ObterVendedorPorId(metaOriginal.VendedorId);
+                var produtoOriginal = metaOriginal.Produto ?? _produtoService.ObterProdutoPorId(metaOriginal.ProdutoId);
+
+                var dadosAnteriores = new Meta
+                {
+                    Id = metaOriginal.Id,
+                    Nome = metaOriginal.Nome,
+                    VendedorId = metaOriginal.VendedorId,
+                    ProdutoId = metaOriginal.ProdutoId,
+                    TipoMeta = metaOriginal.TipoMeta,
+                    Valor = metaOriginal.Valor,
+                    Periodicidade = metaOriginal.Periodicidade,
+                    Ativo = metaOriginal.Ativo,
+                    DataCriacao = metaOriginal.DataCriacao,
+                    Vendedor = vendedorOriginal,
+                    Produto = produtoOriginal
+                };
 
                 using (var form = new CadastroMetaForm(_metaService, _vendedorService, _produtoService, metaId))
                 {
                     if (form.ShowDialog() == DialogResult.OK)
                     {
-                        // Buscar meta após edição para histórico
-                        var metaDepois = _metaService.ObterTodasMetas().FirstOrDefault(m => m.Id == metaId);
-                        if (metaDepois != null)
-                        {
-                            AdicionarAoHistorico(TipoOperacao.Edicao, metaDepois, $"Meta editada - dados anteriores salvos");
-                        }
+                        AdicionarAoHistorico(TipoOperacao.Edicao, dadosAnteriores,
+                            $"Meta '{metaOriginal.Nome}' editada - estado anterior salvo para reversão");
                         CarregarDados();
                     }
                 }
@@ -798,7 +855,6 @@ namespace CadastroMetasVendedores.Forms
                 string nome = dgvMetas.SelectedRows[0].Cells["Nome"].Value?.ToString();
                 string vendedor = dgvMetas.SelectedRows[0].Cells["Vendedor"].Value?.ToString();
 
-                // Salvar dados da meta antes da exclusão
                 var metaParaExcluir = _metaService.ObterTodasMetas().FirstOrDefault(m => m.Id == metaId);
 
                 var resultado = MessageBox.Show(
@@ -850,7 +906,7 @@ namespace CadastroMetasVendedores.Forms
                 if (!string.IsNullOrEmpty(filtro) && !_filtrosAtivos.Contains(filtro))
                 {
                     _filtrosAtivos.Add(filtro);
-                    txtBusca.Text = string.Empty; // Limpar campo de busca após adicionar filtro
+                    txtBusca.Text = string.Empty;
                     AtualizarExibicaoFiltros();
                 }
 
@@ -910,7 +966,6 @@ namespace CadastroMetasVendedores.Forms
         }
     }
 
-    // Classes para o histórico de operações
     public enum TipoOperacao
     {
         Adicao,
@@ -928,10 +983,9 @@ namespace CadastroMetasVendedores.Forms
         public string VendedorNome { get; set; }
         public string ProdutoNome { get; set; }
         public string Descricao { get; set; }
-        public Meta DadosMeta { get; set; } // Dados da meta para permitir reversão
+        public Meta DadosMeta { get; set; }
     }
 
-    // Extensão para desenhar retângulos arredondados
     public static class GraphicsExtensions
     {
         public static void FillRoundedRectangle(this Graphics graphics, Brush brush, Rectangle rect, int cornerRadius)

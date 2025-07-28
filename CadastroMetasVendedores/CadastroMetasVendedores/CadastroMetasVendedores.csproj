@@ -64,12 +64,16 @@
     <Compile Include="Forms\VisualizacaoMetasForm.Designer.cs">
       <DependentUpon>VisualizacaoMetasForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="Helpers\ErrorMessageHelper.cs" />
     <Compile Include="Models\Meta.cs" />
     <Compile Include="Models\Produto.cs" />
     <Compile Include="Models\Vendedor.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Properties\Resources.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
     <Compile Include="Repositories\Interfaces\IMetaRepository.cs" />
     <Compile Include="Repositories\Interfaces\IProdutoRepository.cs" />
     <Compile Include="Repositories\Interfaces\IRepository.cs" />
@@ -83,19 +87,11 @@
     <Compile Include="Services\MetaService.cs" />
     <Compile Include="Services\ProdutoService.cs" />
     <Compile Include="Services\VendedorService.cs" />
-    <EmbeddedResource Include="Forms\CadastroMetaForm.resx">
-      <DependentUpon>CadastroMetaForm.cs</DependentUpon>
-    </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
-      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
       <SubType>Designer</SubType>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
-    <Compile Include="Properties\Resources.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DependentUpon>Resources.resx</DependentUpon>
-      <DesignTime>True</DesignTime>
-    </Compile>
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>

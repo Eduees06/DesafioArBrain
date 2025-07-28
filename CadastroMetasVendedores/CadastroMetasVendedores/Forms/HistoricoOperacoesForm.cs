@@ -5,33 +5,82 @@ using System.Linq;
 using System.Windows.Forms;
 using CadastroMetasVendedores.Models;
 using CadastroMetasVendedores.Services;
+using System.IO;
 
 namespace CadastroMetasVendedores.Forms
 {
-    public partial class HistoricoOperacoesForm : Form
+    public partial class HistoricoOperacoesForm1 : Form
     {
         private readonly List<HistoricoOperacao> _operacoes;
         private readonly MetaService _metaService;
 
-        public HistoricoOperacoesForm(List<HistoricoOperacao> operacoes, MetaService metaService)
+        public HistoricoOperacoesForm1(List<HistoricoOperacao> operacoes, MetaService metaService)
         {
             _operacoes = operacoes;
             _metaService = metaService;
             InitializeComponent();
             CarregarHistorico();
+            SetButtonIcon();
+        }
+
+        private void SetButtonIcon()
+        {
+            try
+            {
+                Image icon = null;
+
+                // Tenta carregar do Resources primeiro
+                try
+                {
+                    icon = Properties.Resources.icone_voltar;
+                }
+                catch { }
+
+                // Se não encontrou no Resources, tenta nos arquivos
+                if (icon == null)
+                {
+                    string[] possiblePaths = {
+                        Path.Combine(Application.StartupPath, "Assets", "Icons", "icone_voltar.png"),
+                        Path.Combine(Directory.GetCurrentDirectory(), "Assets", "Icons", "icone_voltar.png"),
+                        Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets", "Icons", "icone_voltar.png"),
+                        Path.Combine(Environment.CurrentDirectory, "Assets", "Icons", "icone_voltar.png")
+                    };
+
+                    foreach (string path in possiblePaths)
+                    {
+                        if (File.Exists(path))
+                        {
+                            icon = Image.FromFile(path);
+                            break;
+                        }
+                    }
+                }
+
+                if (icon != null)
+                {
+                    // Redimensiona o ícone proporcionalmente
+                    Image resizedIcon = new Bitmap(icon, new Size(16, 16));
+                    btnVoltar.Image = resizedIcon;
+                    btnVoltar.ImageAlign = ContentAlignment.MiddleLeft;
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Erro ao carregar ícone de voltar: {ex.Message}");
+            }
         }
 
         private void CarregarHistorico()
         {
             var dadosGrid = _operacoes.Select(op => new
             {
-                Id = op.Id,
+                op.Id,
                 TipoOperacao = ObterDescricaoOperacao(op.TipoOperacao),
                 DataOperacao = op.DataOperacao.ToString("dd/MM/yyyy HH:mm:ss"),
-                MetaNome = op.MetaNome,
-                VendedorNome = op.VendedorNome,
-                ProdutoNome = op.ProdutoNome,
-                Descricao = op.Descricao
+                op.MetaNome,
+                op.VendedorNome,
+                op.ProdutoNome,
+                op.Descricao
             }).ToList();
 
             dgvHistorico.DataSource = dadosGrid;
@@ -59,25 +108,25 @@ namespace CadastroMetasVendedores.Forms
             if (dgvHistorico.Columns["MetaNome"] != null)
             {
                 dgvHistorico.Columns["MetaNome"].HeaderText = "Meta";
-                dgvHistorico.Columns["MetaNome"].Width = 150;
+                dgvHistorico.Columns["MetaNome"].Width = 120;
             }
 
             if (dgvHistorico.Columns["VendedorNome"] != null)
             {
                 dgvHistorico.Columns["VendedorNome"].HeaderText = "Vendedor";
-                dgvHistorico.Columns["VendedorNome"].Width = 120;
+                dgvHistorico.Columns["VendedorNome"].Width = 100;
             }
 
             if (dgvHistorico.Columns["ProdutoNome"] != null)
             {
                 dgvHistorico.Columns["ProdutoNome"].HeaderText = "Produto";
-                dgvHistorico.Columns["ProdutoNome"].Width = 120;
+                dgvHistorico.Columns["ProdutoNome"].Width = 100;
             }
 
             if (dgvHistorico.Columns["Descricao"] != null)
             {
                 dgvHistorico.Columns["Descricao"].HeaderText = "Descrição";
-                dgvHistorico.Columns["Descricao"].Width = 200;
+                dgvHistorico.Columns["Descricao"].Width = 150;
             }
         }
 
@@ -113,11 +162,22 @@ namespace CadastroMetasVendedores.Forms
                     return;
                 }
 
-                var resultado = MessageBox.Show(
-                    $"Deseja realmente reverter a operação '{ObterDescricaoOperacao(operacao.TipoOperacao)}' da meta '{operacao.MetaNome}'?",
-                    "Confirmar Reversão",
-                    MessageBoxButtons.YesNo,
-                    MessageBoxIcon.Question);
+                string mensagemConfirmacao = "";
+                switch (operacao.TipoOperacao)
+                {
+                    case TipoOperacao.Adicao:
+                        mensagemConfirmacao = $"Deseja realmente reverter a adição da meta '{operacao.MetaNome}'?\nA meta será excluída.";
+                        break;
+                    case TipoOperacao.Exclusao:
+                        mensagemConfirmacao = $"Deseja realmente reverter a exclusão da meta '{operacao.MetaNome}'?\nA meta será recriada.";
+                        break;
+                    case TipoOperacao.Edicao:
+                        mensagemConfirmacao = $"Deseja realmente reverter a edição da meta '{operacao.MetaNome}'?\nA meta voltará ao estado anterior à edição.";
+                        break;
+                }
+
+                var resultado = MessageBox.Show(mensagemConfirmacao, "Confirmar Reversão",
+                    MessageBoxButtons.YesNo, MessageBoxIcon.Question);
 
                 if (resultado == DialogResult.Yes)
                 {
@@ -179,19 +239,38 @@ namespace CadastroMetasVendedores.Forms
                         break;
 
                     case TipoOperacao.Edicao:
-                        // Reverter edição = restaurar dados anteriores
+                        // Reverter edição = atualizar com os dados anteriores
                         if (operacao.DadosMeta != null)
                         {
-                            return _metaService.AtualizarMeta(operacao.DadosMeta);
+                            // Buscar a meta atual primeiro para garantir que existe
+                            var metaAtual = _metaService.ObterMetaPorId(operacao.MetaId) ?? throw new InvalidOperationException($"Meta com ID {operacao.MetaId} não foi encontrada.");
+
+                            // Atualizar a meta atual com os dados anteriores
+                            metaAtual.Nome = operacao.DadosMeta.Nome;
+                            metaAtual.VendedorId = operacao.DadosMeta.VendedorId;
+                            metaAtual.ProdutoId = operacao.DadosMeta.ProdutoId;
+                            metaAtual.TipoMeta = operacao.DadosMeta.TipoMeta;
+                            metaAtual.Valor = operacao.DadosMeta.Valor;
+                            metaAtual.Periodicidade = operacao.DadosMeta.Periodicidade;
+                            metaAtual.Ativo = operacao.DadosMeta.Ativo;
+
+                            return _metaService.AtualizarMeta(metaAtual);
                         }
-                        break;
+                        else
+                        {
+                            throw new InvalidOperationException("Os dados anteriores da meta não foram encontrados. Não é possível reverter a edição.");
+                        }
+
+                    default:
+                        throw new InvalidOperationException("Tipo de operação desconhecido.");
                 }
 
                 return false;
             }
-            catch
+            catch (Exception ex)
             {
-                return false;
+                System.Diagnostics.Debug.WriteLine($"Erro ao reverter operação: {ex.Message}");
+                throw; // Re-lançar a exceção para ser tratada no método chamador
             }
         }
     }

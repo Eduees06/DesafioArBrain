@@ -8,7 +8,7 @@ namespace CadastroMetasVendedores.Repositories
 {
     public class ProdutoRepository : IProdutoRepository
     {
-        // Lista em memória para simulação (substitua por conexão com banco)
+        // Lista em memória para simulação
         private static List<Produto> _produtos = new List<Produto>();
         private static int _nextId = 1;
 

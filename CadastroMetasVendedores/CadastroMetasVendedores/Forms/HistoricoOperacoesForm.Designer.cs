@@ -4,12 +4,12 @@ using System.Windows.Forms;
 
 namespace CadastroMetasVendedores.Forms
 {
-    partial class HistoricoOperacoesForm
+    partial class HistoricoOperacoesForm1
     {
         private System.ComponentModel.IContainer components = null;
         private DataGridView dgvHistorico;
         private Button btnReverter;
-        private Button btnFechar;
+        private Button btnVoltar;
         private Label lblTotalOperacoes;
 
         protected override void Dispose(bool disposing)
@@ -25,7 +25,7 @@ namespace CadastroMetasVendedores.Forms
         {
             this.dgvHistorico = new System.Windows.Forms.DataGridView();
             this.btnReverter = new System.Windows.Forms.Button();
-            this.btnFechar = new System.Windows.Forms.Button();
+            this.btnVoltar = new System.Windows.Forms.Button();
             this.lblTotalOperacoes = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.dgvHistorico)).BeginInit();
             this.SuspendLayout();
@@ -40,6 +40,8 @@ namespace CadastroMetasVendedores.Forms
             this.Font = new Font("Montserrat", 9F, FontStyle.Regular);
             this.BackColor = Color.FromArgb(51, 67, 85);
             this.FormBorderStyle = FormBorderStyle.Sizable;
+            this.KeyPreview = true;
+            this.KeyDown += HistoricoOperacoesForm_KeyDown;
 
             // 
             // dgvHistorico
@@ -68,14 +70,42 @@ namespace CadastroMetasVendedores.Forms
             this.dgvHistorico.RowHeadersVisible = false;
             this.dgvHistorico.ColumnHeadersHeight = 35;
 
+            // Calcular posições dos botões centralizados
+            int buttonWidth = 180;
+            int buttonHeight = 35;
+            int buttonSpacing = 15;
+            int totalButtonsWidth = (buttonWidth * 2) + buttonSpacing;
+            int startX = (800 - totalButtonsWidth) / 2;
+            int buttonY = 510;
+
+            // 
+            // btnVoltar
+            // 
+            this.btnVoltar.Text = "      Voltar (ESC)";
+            this.btnVoltar.Location = new Point(startX, buttonY);
+            this.btnVoltar.Size = new Size(buttonWidth, buttonHeight);
+            this.btnVoltar.BackColor = Color.FromArgb(51, 67, 85);
+            this.btnVoltar.ForeColor = Color.White;
+            this.btnVoltar.FlatStyle = FlatStyle.Flat;
+            this.btnVoltar.Font = new Font("Montserrat", 9F, FontStyle.Bold);
+            this.btnVoltar.Cursor = Cursors.Hand;
+            this.btnVoltar.Anchor = AnchorStyles.Bottom;
+            this.btnVoltar.FlatAppearance.BorderColor = Color.White;
+            this.btnVoltar.FlatAppearance.BorderSize = 2;
+            this.btnVoltar.TextAlign = ContentAlignment.MiddleCenter;
+            this.btnVoltar.ImageAlign = ContentAlignment.MiddleLeft;
+            this.btnVoltar.TextImageRelation = TextImageRelation.ImageBeforeText;
+            this.btnVoltar.Padding = new Padding(5, 0, 0, 0);
+            this.btnVoltar.Click += BtnVoltar_Click;
+
             // 
             // btnReverter
             // 
-            this.btnReverter.Text = "Reverter Operação";
-            this.btnReverter.Location = new Point(300, 510);
-            this.btnReverter.Size = new Size(140, 35);
-            this.btnReverter.BackColor = Color.FromArgb(255, 72, 72);
-            this.btnReverter.ForeColor = Color.White;
+            this.btnReverter.Text = "Reverter Operação (F2)";
+            this.btnReverter.Location = new Point(startX + buttonWidth + buttonSpacing, buttonY);
+            this.btnReverter.Size = new Size(buttonWidth, buttonHeight);
+            this.btnReverter.BackColor = Color.FromArgb(255, 197, 36); // #FFC524
+            this.btnReverter.ForeColor = Color.Black;
             this.btnReverter.FlatStyle = FlatStyle.Flat;
             this.btnReverter.Font = new Font("Montserrat", 9F, FontStyle.Bold);
             this.btnReverter.Cursor = Cursors.Hand;
@@ -83,22 +113,6 @@ namespace CadastroMetasVendedores.Forms
             this.btnReverter.FlatAppearance.BorderColor = Color.Black;
             this.btnReverter.FlatAppearance.BorderSize = 2;
             this.btnReverter.Click += BtnReverter_Click;
-
-            // 
-            // btnFechar
-            // 
-            this.btnFechar.Text = "Fechar";
-            this.btnFechar.Location = new Point(460, 510);
-            this.btnFechar.Size = new Size(120, 35);
-            this.btnFechar.BackColor = Color.FromArgb(51, 67, 85);
-            this.btnFechar.ForeColor = Color.White;
-            this.btnFechar.FlatStyle = FlatStyle.Flat;
-            this.btnFechar.Font = new Font("Montserrat", 9F, FontStyle.Bold);
-            this.btnFechar.Cursor = Cursors.Hand;
-            this.btnFechar.Anchor = AnchorStyles.Bottom;
-            this.btnFechar.FlatAppearance.BorderColor = Color.White;
-            this.btnFechar.FlatAppearance.BorderSize = 2;
-            this.btnFechar.Click += (s, e) => this.Close();
 
             // 
             // lblTotalOperacoes
@@ -118,13 +132,55 @@ namespace CadastroMetasVendedores.Forms
             this.ClientSize = new Size(800, 600);
             this.Controls.Add(this.dgvHistorico);
             this.Controls.Add(this.btnReverter);
-            this.Controls.Add(this.btnFechar);
+            this.Controls.Add(this.btnVoltar);
             this.Controls.Add(this.lblTotalOperacoes);
             this.Name = "HistoricoOperacoesForm";
+            this.Resize += HistoricoOperacoesForm_Resize;
 
             ((System.ComponentModel.ISupportInitialize)(this.dgvHistorico)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
+        }
+
+        private void HistoricoOperacoesForm_KeyDown(object sender, KeyEventArgs e)
+        {
+            switch (e.KeyCode)
+            {
+                case Keys.F2:
+                    BtnReverter_Click(sender, e);
+                    e.Handled = true;
+                    break;
+                case Keys.Escape:
+                    this.Close();
+                    e.Handled = true;
+                    break;
+            }
+        }
+
+        private void BtnVoltar_Click(object sender, EventArgs e)
+        {
+            this.Close();
+        }
+
+        private void HistoricoOperacoesForm_Resize(object sender, EventArgs e)
+        {
+            // Recalcular posição dos botões quando a tela for redimensionada
+            RecalcularPosicaoBotoes();
+        }
+
+        private void RecalcularPosicaoBotoes()
+        {
+            int buttonWidth = 180;
+            int buttonSpacing = 15;
+            int totalButtonsWidth = (buttonWidth * 2) + buttonSpacing; // 2 botões
+            int startX = (this.ClientSize.Width - totalButtonsWidth) / 2;
+            int buttonY = this.ClientSize.Height - 90; // 90 pixels do bottom
+
+            btnVoltar.Location = new Point(startX, buttonY);
+            btnReverter.Location = new Point(startX + buttonWidth + buttonSpacing, buttonY);
+
+            // Reposicionar label total operações
+            lblTotalOperacoes.Location = new Point(10, buttonY + 10);
         }
     }
 }

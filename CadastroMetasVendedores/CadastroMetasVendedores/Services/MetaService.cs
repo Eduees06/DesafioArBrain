@@ -78,9 +78,8 @@ namespace CadastroMetasVendedores.Services
 
         public bool ValidarMeta(Meta meta, out string mensagemErro)
         {
-            mensagemErro = string.Empty;
 
-            // Valida nome da meta
+            // Valida nome da metaDuplicada
             if (string.IsNullOrWhiteSpace(meta.Nome))
             {
                 mensagemErro = "Erro: Nome da meta obrigatório.\nDetalhe: O campo nome da meta deve ser preenchido.\nDica: Digite um nome descritivo para identificar a meta.";
@@ -94,7 +93,7 @@ namespace CadastroMetasVendedores.Services
                 return false;
             }
 
-            // Verifica se já existe uma meta com o mesmo nome
+            // Verifica se já existe uma metaDuplicada com o mesmo nome
             if (_metaRepository.ExisteMetaPorNome(meta.Nome, meta.Id))
             {
                 mensagemErro = "Erro: Nome da meta já existe.\nDetalhe: Já existe uma meta cadastrada com este nome.\nDica: Escolha um nome diferente para a meta ou verifique se você não está duplicando uma meta existente.";
@@ -108,13 +107,12 @@ namespace CadastroMetasVendedores.Services
                 mensagemErro = "Erro: Vendedor não encontrado.\nDetalhe: O vendedor selecionado não existe no sistema.\nDica: Selecione um vendedor válido da lista ou verifique se o vendedor não foi removido.";
                 return false;
             }
-            // Valida se o produto existe e está ativ
 
-            // Valida tipo de meta x produto
+            // Valida tipo de metaDuplicada x produto
             if (!ValidarTipoMetaProduto(meta.TipoMeta, meta.ProdutoId, out mensagemErro))
                 return false;
 
-            // Valida valor da meta
+            // Valida valor da metaDuplicada
             if (meta.Valor <= 0)
             {
                 mensagemErro = "Erro: Valor inválido.\nDetalhe: O valor da meta deve ser maior que zero.\nDica: Digite um valor positivo para a meta.";
@@ -155,10 +153,7 @@ namespace CadastroMetasVendedores.Services
 
         public Meta DuplicarMeta(int metaId)
         {
-            var metaOriginal = _metaRepository.GetById(metaId);
-            if (metaOriginal == null)
-                throw new InvalidOperationException("Erro: Meta não encontrada.\nDetalhe: A meta que você está tentando duplicar não existe.\nDica: Verifique se a meta não foi removida e tente novamente.");
-
+            _ = _metaRepository.GetById(metaId) ?? throw new InvalidOperationException("Erro: Meta não encontrada.\nDetalhe: A meta que você está tentando duplicar não existe.\nDica: Verifique se a meta não foi removida e tente novamente.");
             return _metaRepository.DuplicarMeta(metaId);
         }
 
@@ -251,37 +246,6 @@ namespace CadastroMetasVendedores.Services
         private bool ContemAspasSimples(string texto)
         {
             return !string.IsNullOrEmpty(texto) && texto.Contains("'");
-        }
-
-        // Métodos auxiliares para obter descrições
-        private string ObterDescricaoTipoMeta(TipoMeta tipoMeta)
-        {
-            switch (tipoMeta)
-            {
-                case TipoMeta.Monetario:
-                    return "monetária";
-                case TipoMeta.Litros:
-                    return "em litros";
-                case TipoMeta.Unidades:
-                    return "em unidades";
-                default:
-                    return "desconhecida";
-            }
-        }
-
-        private string ObterDescricaoPeriodicidade(PeriodicidadeMeta periodicidade)
-        {
-            switch (periodicidade)
-            {
-                case PeriodicidadeMeta.Diaria:
-                    return "Diária";
-                case PeriodicidadeMeta.Semanal:
-                    return "Semanal";
-                case PeriodicidadeMeta.Mensal:
-                    return "Mensal";
-                default:
-                    return "Desconhecida";
-            }
         }
     }
 }

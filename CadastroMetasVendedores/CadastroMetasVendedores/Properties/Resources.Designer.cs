@@ -83,16 +83,6 @@ namespace CadastroMetasVendedores.Properties {
         /// <summary>
         ///   Consulta um recurso localizado do tipo System.Drawing.Bitmap.
         /// </summary>
-        internal static System.Drawing.Bitmap icone_check {
-            get {
-                object obj = ResourceManager.GetObject("icone_check", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Consulta um recurso localizado do tipo System.Drawing.Bitmap.
-        /// </summary>
         internal static System.Drawing.Bitmap icone_duplicar {
             get {
                 object obj = ResourceManager.GetObject("icone_duplicar", resourceCulture);
@@ -146,36 +136,6 @@ namespace CadastroMetasVendedores.Properties {
         internal static System.Drawing.Bitmap icone_salvar {
             get {
                 object obj = ResourceManager.GetObject("icone_salvar", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Consulta um recurso localizado do tipo System.Drawing.Bitmap.
-        /// </summary>
-        internal static System.Drawing.Bitmap icone_seta_baixo {
-            get {
-                object obj = ResourceManager.GetObject("icone_seta_baixo", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Consulta um recurso localizado do tipo System.Drawing.Bitmap.
-        /// </summary>
-        internal static System.Drawing.Bitmap icone_seta_cima {
-            get {
-                object obj = ResourceManager.GetObject("icone_seta_cima", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Consulta um recurso localizado do tipo System.Drawing.Bitmap.
-        /// </summary>
-        internal static System.Drawing.Bitmap icone_uncheck {
-            get {
-                object obj = ResourceManager.GetObject("icone_uncheck", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }

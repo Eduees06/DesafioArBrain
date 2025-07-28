@@ -70,31 +70,25 @@ namespace CadastroMetasVendedores.Forms
             ((System.ComponentModel.ISupportInitialize)(this.picLogo)).BeginInit();
             this.SuspendLayout();
 
-            // 
             // Form
-            // 
             this.Text = "Visualização de Metas";
             this.Size = new Size(1200, 720);
             this.StartPosition = FormStartPosition.CenterScreen;
             this.MinimumSize = new Size(1200, 720);
             this.Font = new Font("Montserrat", 9F, FontStyle.Regular, GraphicsUnit.Point, 0);
-            this.BackColor = Color.FromArgb(51, 67, 85); // #334355
+            this.BackColor = Color.FromArgb(51, 67, 85);
             this.KeyPreview = true;
             this.FormBorderStyle = FormBorderStyle.Sizable;
             this.MaximizeBox = true;
 
-            // 
             // picLogo
-            // 
             this.picLogo.Location = new Point(15, 15);
             this.picLogo.Size = new Size(80, 80);
             this.picLogo.SizeMode = PictureBoxSizeMode.Zoom;
             this.picLogo.BackColor = Color.Transparent;
             this.picLogo.Anchor = AnchorStyles.Top | AnchorStyles.Left;
 
-            // 
             // lblBusca
-            // 
             this.lblBusca.Text = "Buscar:";
             this.lblBusca.Location = new Point(500, 15);
             this.lblBusca.Size = new Size(60, 15);
@@ -103,30 +97,24 @@ namespace CadastroMetasVendedores.Forms
             this.lblBusca.BackColor = Color.Transparent;
             this.lblBusca.Anchor = AnchorStyles.Top | AnchorStyles.Right;
 
-            // 
             // txtBusca
-            // 
-            this.txtBusca.Location = new Point(500, 35);
+            this.txtBusca.Location = new Point(550, 35);
             this.txtBusca.Size = new Size(250, 21);
             this.txtBusca.Font = new Font("Montserrat", 9F, FontStyle.Regular);
             this.txtBusca.BackColor = Color.White;
             this.txtBusca.BorderStyle = BorderStyle.FixedSingle;
             this.txtBusca.Anchor = AnchorStyles.Top | AnchorStyles.Right;
 
-            // 
             // lblLegendaFiltros
-            // 
             this.lblLegendaFiltros.Text = "Filtrável por: Nome, Vendedor, Produto, Tipo, Valor, Periodicidade, Data, Status";
-            this.lblLegendaFiltros.Location = new Point(500, 60);
-            this.lblLegendaFiltros.Size = new Size(550, 15);
+            this.lblLegendaFiltros.Location = new Point(550, 60);
+            this.lblLegendaFiltros.Size = new Size(650, 15);
             this.lblLegendaFiltros.Font = new Font("Montserrat", 8F, FontStyle.Italic);
             this.lblLegendaFiltros.ForeColor = Color.LightGray;
             this.lblLegendaFiltros.BackColor = Color.Transparent;
             this.lblLegendaFiltros.Anchor = AnchorStyles.Top | AnchorStyles.Right;
 
-            // 
             // btnLimparFiltros
-            // 
             this.btnLimparFiltros.Text = "Limpar Filtros";
             this.btnLimparFiltros.Location = new Point(760, 33);
             this.btnLimparFiltros.Size = new Size(100, 25);
@@ -141,9 +129,7 @@ namespace CadastroMetasVendedores.Forms
             this.btnLimparFiltros.Anchor = AnchorStyles.Top | AnchorStyles.Right;
             this.btnLimparFiltros.TextAlign = ContentAlignment.MiddleCenter;
 
-            // 
             // lblToggleText
-            // 
             this.lblToggleText.Text = "Exibir Inativos";
             this.lblToggleText.Location = new Point(0, 2);
             this.lblToggleText.Size = new Size(90, 18);
@@ -152,19 +138,15 @@ namespace CadastroMetasVendedores.Forms
             this.lblToggleText.TextAlign = ContentAlignment.BottomRight;
             this.lblToggleText.BackColor = Color.Transparent;
 
-            // 
-            // pnlToggleSwitch
-            // 
+            // pnlToggleSwitch - Posição fixa em relação ao logo
             this.pnlToggleSwitch.Location = new Point(600, 35);
             this.pnlToggleSwitch.Size = new Size(160, 50);
             this.pnlToggleSwitch.BackColor = Color.Transparent;
             this.pnlToggleSwitch.Controls.Add(this.lblToggleText);
             this.pnlToggleSwitch.Controls.Add(this.pnlToggleSlider);
-            this.pnlToggleSwitch.Anchor = AnchorStyles.Top | AnchorStyles.Left;
+            this.pnlToggleSwitch.Anchor = AnchorStyles.Top | AnchorStyles.Right;
 
-            // 
             // pnlToggleSlider
-            // 
             this.pnlToggleSlider.Location = new Point(95, 3);
             this.pnlToggleSlider.Size = new Size(60, 25);
             this.pnlToggleSlider.BackColor = Color.Transparent;
@@ -173,18 +155,14 @@ namespace CadastroMetasVendedores.Forms
             this.pnlToggleSlider.Paint += PnlToggleSlider_Paint;
             this.pnlToggleSlider.Click += PnlToggleSlider_Click;
 
-            // 
             // pnlFiltros
-            // 
             this.pnlFiltros.Location = new Point(500, 85);
             this.pnlFiltros.Size = new Size(680, 25);
             this.pnlFiltros.BackColor = Color.Transparent;
             this.pnlFiltros.Controls.Add(this.flpFiltrosAtivos);
             this.pnlFiltros.Anchor = AnchorStyles.Top | AnchorStyles.Right;
 
-            // 
             // flpFiltrosAtivos
-            // 
             this.flpFiltrosAtivos.Location = new Point(0, 0);
             this.flpFiltrosAtivos.Size = new Size(680, 25);
             this.flpFiltrosAtivos.BackColor = Color.Transparent;
@@ -192,20 +170,16 @@ namespace CadastroMetasVendedores.Forms
             this.flpFiltrosAtivos.WrapContents = false;
             this.flpFiltrosAtivos.AutoScroll = true;
 
-            // 
             // pnlBackground
-            // 
             this.pnlBackground.Location = new Point(8, 115);
             this.pnlBackground.Size = new Size(1184, 450);
             this.pnlBackground.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right | AnchorStyles.Bottom;
             this.pnlBackground.BorderStyle = BorderStyle.FixedSingle;
-            this.pnlBackground.BackColor = Color.FromArgb(244, 244, 244); // #F4F4F4
+            this.pnlBackground.BackColor = Color.FromArgb(244, 244, 244);
             this.pnlBackground.Controls.Add(this.dgvMetas);
             this.pnlBackground.Controls.Add(this.lblMensagemVazia);
 
-            // 
             // dgvMetas
-            // 
             this.dgvMetas.Location = new Point(5, 0);
             this.dgvMetas.Size = new Size(1174, 448);
             this.dgvMetas.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right | AnchorStyles.Bottom;
@@ -216,20 +190,20 @@ namespace CadastroMetasVendedores.Forms
             this.dgvMetas.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
             this.dgvMetas.MultiSelect = false;
             this.dgvMetas.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
-            this.dgvMetas.ColumnHeadersDefaultCellStyle.BackColor = Color.FromArgb(51, 67, 85); // #334355
+            this.dgvMetas.ColumnHeadersDefaultCellStyle.BackColor = Color.FromArgb(51, 67, 85);
             this.dgvMetas.ColumnHeadersDefaultCellStyle.ForeColor = Color.White;
             this.dgvMetas.ColumnHeadersDefaultCellStyle.Font = new Font("Montserrat", 9F, FontStyle.Bold);
             this.dgvMetas.AlternatingRowsDefaultCellStyle.BackColor = Color.FromArgb(244, 244, 244);
             this.dgvMetas.DefaultCellStyle.BackColor = Color.White;
             this.dgvMetas.DefaultCellStyle.Font = new Font("Montserrat", 9F);
             this.dgvMetas.RowHeadersVisible = false;
-            this.dgvMetas.GridColor = Color.FromArgb(255, 197, 36); // #ffc524
+            this.dgvMetas.GridColor = Color.FromArgb(255, 197, 36);
             this.dgvMetas.ColumnHeadersHeight = 35;
             this.dgvMetas.AllowUserToOrderColumns = true;
+            this.dgvMetas.ColumnHeadersDefaultCellStyle.SelectionBackColor = Color.FromArgb(71, 87, 105);
+            this.dgvMetas.EnableHeadersVisualStyles = false;
 
-            // 
             // lblMensagemVazia
-            // 
             this.lblMensagemVazia.Text = "Nenhuma meta encontrada.";
             this.lblMensagemVazia.Font = new Font("Montserrat", 12F, FontStyle.Regular);
             this.lblMensagemVazia.ForeColor = Color.Gray;
@@ -238,9 +212,7 @@ namespace CadastroMetasVendedores.Forms
             this.lblMensagemVazia.Visible = false;
             this.lblMensagemVazia.BackColor = Color.Transparent;
 
-            // 
             // lblTotalRegistros
-            // 
             this.lblTotalRegistros.Location = new Point(8, 580);
             this.lblTotalRegistros.Size = new Size(300, 20);
             this.lblTotalRegistros.Font = new Font("Montserrat", 9F, FontStyle.Regular);
@@ -248,19 +220,15 @@ namespace CadastroMetasVendedores.Forms
             this.lblTotalRegistros.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
             this.lblTotalRegistros.BackColor = Color.Transparent;
 
-            // Definir constantes para os botões (agora 7 botões)
-            int buttonWidth = 130;
+            // Configuração dos botões - Nova ordem: Excluir, Histórico, Editar, Buscar, Duplicar, Voltar, Adicionar
+            int buttonWidth = 150;
             int buttonHeight = 40;
-            int buttonSpacing = 15;
-            int totalButtonsWidth = (buttonWidth * 7) + (buttonSpacing * 6); // 7 botões
-            int startX = (1200 - totalButtonsWidth) / 2; // Usar tamanho inicial do form
-            int buttonY = 630; // 90 pixels do bottom inicial
+            int buttonSpacing = 30;
+            int buttonY = 630;
 
-            // 
-            // btnExcluir
-            // 
+            // btnExcluir (índice 0)
             this.btnExcluir.Text = "Excluir (Del)";
-            this.btnExcluir.Location = new Point(startX, buttonY);
+            this.btnExcluir.Location = new Point((1200 - ((buttonWidth * 7) + (buttonSpacing * 6))) / 2, buttonY);
             this.btnExcluir.Size = new Size(buttonWidth, buttonHeight);
             this.btnExcluir.BackColor = Color.FromArgb(255, 72, 72);
             this.btnExcluir.ForeColor = Color.White;
@@ -276,91 +244,9 @@ namespace CadastroMetasVendedores.Forms
             this.btnExcluir.TextImageRelation = TextImageRelation.TextBeforeImage;
             this.btnExcluir.Padding = new Padding(0, 0, 5, 0);
 
-            // 
-            // btnBuscar
-            // 
-            this.btnBuscar.Text = "Buscar (F11)";
-            this.btnBuscar.Location = new Point(startX + buttonWidth + buttonSpacing, buttonY);
-            this.btnBuscar.Size = new Size(buttonWidth, buttonHeight);
-            this.btnBuscar.BackColor = Color.DarkCyan;
-            this.btnBuscar.ForeColor = Color.White;
-            this.btnBuscar.FlatStyle = FlatStyle.Flat;
-            this.btnBuscar.FlatAppearance.BorderColor = Color.Black;
-            this.btnBuscar.FlatAppearance.BorderSize = 2;
-            this.btnBuscar.Font = new Font("Montserrat", 9F, FontStyle.Bold);
-            this.btnBuscar.UseVisualStyleBackColor = false;
-            this.btnBuscar.Cursor = Cursors.Hand;
-            this.btnBuscar.Anchor = AnchorStyles.Bottom;
-            this.btnBuscar.TextAlign = ContentAlignment.MiddleCenter;
-            this.btnBuscar.ImageAlign = ContentAlignment.MiddleCenter;
-            this.btnBuscar.TextImageRelation = TextImageRelation.Overlay;
-            this.btnBuscar.Padding = new Padding(0, 0, 5, 0);
-
-            // 
-            // btnEditar
-            // 
-            this.btnEditar.Text = "Editar (F4)";
-            this.btnEditar.Location = new Point(startX + (buttonWidth + buttonSpacing) * 2, buttonY);
-            this.btnEditar.Size = new Size(buttonWidth, buttonHeight);
-            this.btnEditar.BackColor = Color.FromArgb(51, 67, 85);
-            this.btnEditar.ForeColor = Color.White;
-            this.btnEditar.FlatStyle = FlatStyle.Flat;
-            this.btnEditar.FlatAppearance.BorderColor = Color.White;
-            this.btnEditar.FlatAppearance.BorderSize = 2;
-            this.btnEditar.Font = new Font("Montserrat", 9F, FontStyle.Bold);
-            this.btnEditar.UseVisualStyleBackColor = false;
-            this.btnEditar.Cursor = Cursors.Hand;
-            this.btnEditar.Anchor = AnchorStyles.Bottom;
-            this.btnEditar.TextAlign = ContentAlignment.MiddleCenter;
-            this.btnEditar.ImageAlign = ContentAlignment.MiddleRight;
-            this.btnEditar.TextImageRelation = TextImageRelation.TextBeforeImage;
-            this.btnEditar.Padding = new Padding(0, 0, 5, 0);
-
-            // 
-            // btnDuplicar
-            // 
-            this.btnDuplicar.Text = "Duplicar";
-            this.btnDuplicar.Location = new Point(startX + (buttonWidth + buttonSpacing) * 3, buttonY);
-            this.btnDuplicar.Size = new Size(buttonWidth, buttonHeight);
-            this.btnDuplicar.BackColor = Color.FromArgb(51, 67, 85);
-            this.btnDuplicar.ForeColor = Color.White;
-            this.btnDuplicar.FlatStyle = FlatStyle.Flat;
-            this.btnDuplicar.FlatAppearance.BorderColor = Color.White;
-            this.btnDuplicar.FlatAppearance.BorderSize = 2;
-            this.btnDuplicar.Font = new Font("Montserrat", 9F, FontStyle.Bold);
-            this.btnDuplicar.UseVisualStyleBackColor = false;
-            this.btnDuplicar.Cursor = Cursors.Hand;
-            this.btnDuplicar.Anchor = AnchorStyles.Bottom;
-            this.btnDuplicar.TextAlign = ContentAlignment.MiddleCenter;
-            this.btnDuplicar.ImageAlign = ContentAlignment.MiddleRight;
-            this.btnDuplicar.TextImageRelation = TextImageRelation.TextBeforeImage;
-            this.btnDuplicar.Padding = new Padding(0, 0, 5, 0);
-
-            // 
-            // btnVoltar
-            // 
-            this.btnVoltar.Text = "Voltar (ESC)";
-            this.btnVoltar.Location = new Point(startX + (buttonWidth + buttonSpacing) * 4, buttonY);
-            this.btnVoltar.Size = new Size(buttonWidth, buttonHeight);
-            this.btnVoltar.BackColor = Color.FromArgb(51, 67, 85);
-            this.btnVoltar.ForeColor = Color.White;
-            this.btnVoltar.FlatStyle = FlatStyle.Flat;
-            this.btnVoltar.FlatAppearance.BorderColor = Color.White;
-            this.btnVoltar.FlatAppearance.BorderSize = 2;
-            this.btnVoltar.Font = new Font("Montserrat", 9F, FontStyle.Bold);
-            this.btnVoltar.UseVisualStyleBackColor = false;
-            this.btnVoltar.Cursor = Cursors.Hand;
-            this.btnVoltar.Anchor = AnchorStyles.Bottom;
-            this.btnVoltar.TextAlign = ContentAlignment.MiddleCenter;
-            this.btnVoltar.ImageAlign = ContentAlignment.MiddleLeft;
-            this.btnVoltar.TextImageRelation = TextImageRelation.ImageBeforeText;
-            this.btnVoltar.Padding = new Padding(5, 0, 0, 0);
-
-            // 
-            // btnHistorico
-            // 
+            // btnHistorico (índice 1)
             this.btnHistorico.Text = "Histórico";
-            this.btnHistorico.Location = new Point(startX + (buttonWidth + buttonSpacing) * 5, buttonY);
+            this.btnHistorico.Location = new Point((1200 - ((buttonWidth * 7) + (buttonSpacing * 6))) / 2 + buttonWidth + buttonSpacing, buttonY);
             this.btnHistorico.Size = new Size(buttonWidth, buttonHeight);
             this.btnHistorico.BackColor = Color.FromArgb(51, 67, 85);
             this.btnHistorico.ForeColor = Color.White;
@@ -376,11 +262,81 @@ namespace CadastroMetasVendedores.Forms
             this.btnHistorico.TextImageRelation = TextImageRelation.TextBeforeImage;
             this.btnHistorico.Padding = new Padding(0, 0, 5, 0);
 
-            // 
-            // btnAdicionar
-            // 
+            // btnEditar (índice 2)
+            this.btnEditar.Text = "Editar (F4)";
+            this.btnEditar.Location = new Point((1200 - ((buttonWidth * 7) + (buttonSpacing * 6))) / 2 + (buttonWidth + buttonSpacing) * 2, buttonY);
+            this.btnEditar.Size = new Size(buttonWidth, buttonHeight);
+            this.btnEditar.BackColor = Color.FromArgb(51, 67, 85);
+            this.btnEditar.ForeColor = Color.White;
+            this.btnEditar.FlatStyle = FlatStyle.Flat;
+            this.btnEditar.FlatAppearance.BorderColor = Color.White;
+            this.btnEditar.FlatAppearance.BorderSize = 2;
+            this.btnEditar.Font = new Font("Montserrat", 9F, FontStyle.Bold);
+            this.btnEditar.UseVisualStyleBackColor = false;
+            this.btnEditar.Cursor = Cursors.Hand;
+            this.btnEditar.Anchor = AnchorStyles.Bottom;
+            this.btnEditar.TextAlign = ContentAlignment.MiddleCenter;
+            this.btnEditar.ImageAlign = ContentAlignment.MiddleRight;
+            this.btnEditar.TextImageRelation = TextImageRelation.TextBeforeImage;
+            this.btnEditar.Padding = new Padding(0, 0, 5, 0);
+
+            // btnBuscar (índice 3)
+            this.btnBuscar.Text = "Buscar (F11)";
+            this.btnBuscar.Location = new Point((1200 - ((buttonWidth * 7) + (buttonSpacing * 6))) / 2 + (buttonWidth + buttonSpacing) * 3, buttonY);
+            this.btnBuscar.Size = new Size(buttonWidth, buttonHeight);
+            this.btnBuscar.BackColor = Color.DarkCyan;
+            this.btnBuscar.ForeColor = Color.White;
+            this.btnBuscar.FlatStyle = FlatStyle.Flat;
+            this.btnBuscar.FlatAppearance.BorderColor = Color.Black;
+            this.btnBuscar.FlatAppearance.BorderSize = 2;
+            this.btnBuscar.Font = new Font("Montserrat", 9F, FontStyle.Bold);
+            this.btnBuscar.UseVisualStyleBackColor = false;
+            this.btnBuscar.Cursor = Cursors.Hand;
+            this.btnBuscar.Anchor = AnchorStyles.Bottom;
+            this.btnBuscar.TextAlign = ContentAlignment.MiddleCenter;
+            this.btnBuscar.ImageAlign = ContentAlignment.MiddleCenter;
+            this.btnBuscar.TextImageRelation = TextImageRelation.Overlay;
+            this.btnBuscar.Padding = new Padding(0, 0, 5, 0);
+
+            // btnDuplicar (índice 4)
+            this.btnDuplicar.Text = "Duplicar";
+            this.btnDuplicar.Location = new Point((1200 - ((buttonWidth * 7) + (buttonSpacing * 6))) / 2 + (buttonWidth + buttonSpacing) * 4, buttonY);
+            this.btnDuplicar.Size = new Size(buttonWidth, buttonHeight);
+            this.btnDuplicar.BackColor = Color.FromArgb(51, 67, 85);
+            this.btnDuplicar.ForeColor = Color.White;
+            this.btnDuplicar.FlatStyle = FlatStyle.Flat;
+            this.btnDuplicar.FlatAppearance.BorderColor = Color.White;
+            this.btnDuplicar.FlatAppearance.BorderSize = 2;
+            this.btnDuplicar.Font = new Font("Montserrat", 9F, FontStyle.Bold);
+            this.btnDuplicar.UseVisualStyleBackColor = false;
+            this.btnDuplicar.Cursor = Cursors.Hand;
+            this.btnDuplicar.Anchor = AnchorStyles.Bottom;
+            this.btnDuplicar.TextAlign = ContentAlignment.MiddleCenter;
+            this.btnDuplicar.ImageAlign = ContentAlignment.MiddleRight;
+            this.btnDuplicar.TextImageRelation = TextImageRelation.TextBeforeImage;
+            this.btnDuplicar.Padding = new Padding(0, 0, 5, 0);
+
+            // btnVoltar (índice 5)
+            this.btnVoltar.Text = "    Voltar (ESC)";
+            this.btnVoltar.Location = new Point((1200 - ((buttonWidth * 7) + (buttonSpacing * 6))) / 2 + (buttonWidth + buttonSpacing) * 5, buttonY);
+            this.btnVoltar.Size = new Size(buttonWidth, buttonHeight);
+            this.btnVoltar.BackColor = Color.FromArgb(51, 67, 85);
+            this.btnVoltar.ForeColor = Color.White;
+            this.btnVoltar.FlatStyle = FlatStyle.Flat;
+            this.btnVoltar.FlatAppearance.BorderColor = Color.White;
+            this.btnVoltar.FlatAppearance.BorderSize = 2;
+            this.btnVoltar.Font = new Font("Montserrat", 9F, FontStyle.Bold);
+            this.btnVoltar.UseVisualStyleBackColor = false;
+            this.btnVoltar.Cursor = Cursors.Hand;
+            this.btnVoltar.Anchor = AnchorStyles.Bottom;
+            this.btnVoltar.TextAlign = ContentAlignment.MiddleCenter;
+            this.btnVoltar.ImageAlign = ContentAlignment.MiddleLeft;
+            this.btnVoltar.TextImageRelation = TextImageRelation.ImageBeforeText;
+            this.btnVoltar.Padding = new Padding(5, 0, 0, 0);
+
+            // btnAdicionar (índice 6)
             this.btnAdicionar.Text = "Adicionar (F2)";
-            this.btnAdicionar.Location = new Point(startX + (buttonWidth + buttonSpacing) * 6, buttonY);
+            this.btnAdicionar.Location = new Point((1200 - ((buttonWidth * 7) + (buttonSpacing * 6))) / 2 + (buttonWidth + buttonSpacing) * 6, buttonY);
             this.btnAdicionar.Size = new Size(buttonWidth, buttonHeight);
             this.btnAdicionar.BackColor = Color.FromArgb(23, 181, 28);
             this.btnAdicionar.ForeColor = Color.White;
@@ -394,27 +350,25 @@ namespace CadastroMetasVendedores.Forms
             this.btnAdicionar.TextAlign = ContentAlignment.MiddleCenter;
             this.btnAdicionar.ImageAlign = ContentAlignment.MiddleRight;
             this.btnAdicionar.TextImageRelation = TextImageRelation.ImageBeforeText;
-            this.btnAdicionar.Padding = new  Padding(0, 0, 5, 0);
+            this.btnAdicionar.Padding = new Padding(0, 0, 5, 0);
 
-            // Adicionar eventos
+            // Eventos
             this.Load += VisualizacaoMetasForm_Load;
             this.Resize += VisualizacaoMetasForm_Resize;
 
-            // 
             // VisualizacaoMetasForm
-            // 
             this.AutoScaleDimensions = new SizeF(7F, 15F);
             this.AutoScaleMode = AutoScaleMode.Font;
             this.ClientSize = new Size(1200, 720);
             this.Controls.Add(this.picLogo);
             this.Controls.Add(this.pnlBackground);
             this.Controls.Add(this.btnExcluir);
-            this.Controls.Add(this.btnBuscar);
-            this.Controls.Add(this.btnEditar);
-            this.Controls.Add(this.btnDuplicar);
-            this.Controls.Add(this.btnAdicionar);
-            this.Controls.Add(this.btnVoltar);
             this.Controls.Add(this.btnHistorico);
+            this.Controls.Add(this.btnEditar);
+            this.Controls.Add(this.btnBuscar);
+            this.Controls.Add(this.btnDuplicar);
+            this.Controls.Add(this.btnVoltar);
+            this.Controls.Add(this.btnAdicionar);
             this.Controls.Add(this.pnlToggleSwitch);
             this.Controls.Add(this.lblBusca);
             this.Controls.Add(this.txtBusca);
@@ -435,51 +389,45 @@ namespace CadastroMetasVendedores.Forms
 
         private void VisualizacaoMetasForm_Resize(object sender, EventArgs e)
         {
-            // Recalcular posição dos botões quando a tela for redimensionada
             RecalcularPosicaoBotoes();
-
-            // Reposicionar elementos do cabeçalho
             ReposicionarElementosCabecalho();
         }
 
         private void VisualizacaoMetasForm_Load(object sender, EventArgs e)
         {
-            // Posicionar botões na inicialização
             RecalcularPosicaoBotoes();
             ReposicionarElementosCabecalho();
         }
 
         private void RecalcularPosicaoBotoes()
         {
-            int buttonWidth = 120;
-            int buttonSpacing = 15;
-            int totalButtonsWidth = (buttonWidth * 7) + (buttonSpacing * 6); // 7 botões
+            int buttonWidth = 150;
+            int buttonSpacing = 40;
+            int totalButtonsWidth = (buttonWidth * 7) + (buttonSpacing * 6);
             int startX = (this.ClientSize.Width - totalButtonsWidth) / 2;
-            int buttonY = this.ClientSize.Height - 90; // 90 pixels do bottom
+            int buttonY = this.ClientSize.Height - 90;
 
+            // Ordem: Excluir, Histórico, Editar, Buscar, Duplicar, Voltar, Adicionar
             btnExcluir.Location = new Point(startX, buttonY);
-            btnBuscar.Location = new Point(startX + buttonWidth + buttonSpacing, buttonY);
+            btnHistorico.Location = new Point(startX + buttonWidth + buttonSpacing, buttonY);
             btnEditar.Location = new Point(startX + (buttonWidth + buttonSpacing) * 2, buttonY);
-            btnDuplicar.Location = new Point(startX + (buttonWidth + buttonSpacing) * 3, buttonY);
-            btnVoltar.Location = new Point(startX + (buttonWidth + buttonSpacing) * 4, buttonY);
-            btnHistorico.Location = new Point(startX + (buttonWidth + buttonSpacing) * 5, buttonY);
+            btnBuscar.Location = new Point(startX + (buttonWidth + buttonSpacing) * 3, buttonY);
+            btnDuplicar.Location = new Point(startX + (buttonWidth + buttonSpacing) * 4, buttonY);
+            btnVoltar.Location = new Point(startX + (buttonWidth + buttonSpacing) * 5, buttonY);
             btnAdicionar.Location = new Point(startX + (buttonWidth + buttonSpacing) * 6, buttonY);
 
-            // Reposicionar label total registros
             lblTotalRegistros.Location = new Point(8, buttonY - 50);
         }
 
         private void ReposicionarElementosCabecalho()
         {
-            // Calcular posições baseadas no tamanho da tela
             int rightMargin = 100;
 
-            // Busca e elementos relacionados
-            lblBusca.Location = new Point(this.ClientSize.Width - 305 - rightMargin, 15);
-            txtBusca.Location = new Point(this.ClientSize.Width - 300 - rightMargin, 35);
-            lblLegendaFiltros.Location = new Point(this.ClientSize.Width - 300 - rightMargin, 60);
-            btnLimparFiltros.Location = new Point(this.ClientSize.Width - 40 - rightMargin, 33);
-            pnlFiltros.Location = new Point(this.ClientSize.Width - 300 - rightMargin, 85);
+            lblBusca.Location = new Point(this.ClientSize.Width - 375 - rightMargin, 15);
+            txtBusca.Location = new Point(this.ClientSize.Width - 370 - rightMargin, 35);
+            lblLegendaFiltros.Location = new Point(this.ClientSize.Width - 370 - rightMargin, 60);
+            btnLimparFiltros.Location = new Point(this.ClientSize.Width - 60 - rightMargin, 33);
+            pnlFiltros.Location = new Point(this.ClientSize.Width - 370 - rightMargin, 85);
         }
     }
 }

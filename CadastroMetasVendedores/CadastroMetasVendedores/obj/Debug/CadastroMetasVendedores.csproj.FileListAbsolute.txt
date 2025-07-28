@@ -8,4 +8,3 @@ D:\WindowsForms\Curso\CadastroMetasVendedores\CadastroMetasVendedores\obj\Debug\
 D:\WindowsForms\Curso\CadastroMetasVendedores\CadastroMetasVendedores\obj\Debug\CadastroMetasVendedores.exe
 D:\WindowsForms\Curso\CadastroMetasVendedores\CadastroMetasVendedores\obj\Debug\CadastroMetasVendedores.pdb
 D:\WindowsForms\Curso\CadastroMetasVendedores\CadastroMetasVendedores\obj\Debug\CadastroMetasVendedores.exe.config
-D:\WindowsForms\Curso\CadastroMetasVendedores\CadastroMetasVendedores\obj\Debug\CadastroMetasVendedores.Forms.CadastroMetaForm.resources

@@ -9,7 +9,7 @@ namespace CadastroMetasVendedores.Repositories
     public class MetaRepository : IMetaRepository
     {
         // Lista em memória para simulação (substitua por conexão com banco)
-        private static List<Meta> _metas = new List<Meta>();
+        private static readonly List<Meta> _metas = new List<Meta>();
         private static int _nextId = 1;
 
         private readonly IVendedorRepository _vendedorRepository;
