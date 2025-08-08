@@ -1,232 +1,311 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data.SqlClient;
 using System.Linq;
 using CadastroMetasVendedores.Models;
 using CadastroMetasVendedores.Repositories.Interfaces;
+using Dapper;
 
 namespace CadastroMetasVendedores.Repositories
 {
     public class MetaRepository : IMetaRepository
     {
-        // Lista em memória para simulação (substitua por conexão com banco)
-        private static readonly List<Meta> _metas = new List<Meta>();
-        private static int _nextId = 1;
+        private readonly string _connectionString =
+            "Data Source=DESKTOP-I82247C\\SQLEXPRESS;Initial Catalog=MinhaBaseDeDados;Integrated Security=True;Encrypt=False";
 
-        private readonly IVendedorRepository _vendedorRepository;
-        private readonly IProdutoRepository _produtoRepository;
-
-        public MetaRepository(IVendedorRepository vendedorRepository, IProdutoRepository produtoRepository)
-        {
-            _vendedorRepository = vendedorRepository;
-            _produtoRepository = produtoRepository;
-        }
+        private const string BaseSelect = @"
+            SELECT 
+                m.Id, m.Nome, m.VendedorId, m.ProdutoId, m.TipoMeta, m.Valor, m.Periodicidade, m.DataCriacao, m.Ativo,
+                v.Id, v.Nome, v.Email, v.Telefone, v.DataCadastro, v.Ativo,
+                p.Id, p.Nome, p.TipoProduto, p.PrecoUnitario, p.UnidadeMedida, p.DataCadastro, p.Ativo
+            FROM Meta m
+            INNER JOIN Vendedor v ON m.VendedorId = v.Id
+            INNER JOIN Produto p ON m.ProdutoId = p.Id
+        ";
 
         public int Insert(Meta entity)
         {
-            entity.Id = _nextId++;
-            entity.DataCriacao = DateTime.Now;
+            using (var connection = new SqlConnection(_connectionString))
+            {
+                var sql = @"
+                    INSERT INTO Meta 
+                        (Nome, VendedorId, ProdutoId, TipoMeta, Valor, Periodicidade, DataCriacao, Ativo)
+                    VALUES 
+                        (@Nome, @VendedorId, @ProdutoId, @TipoMeta, @Valor, @Periodicidade, @DataCriacao, @Ativo);
+                    SELECT CAST(SCOPE_IDENTITY() as int);";
 
-            // Carrega as entidades relacionadas
-            entity.Vendedor = _vendedorRepository.GetById(entity.VendedorId);
-            entity.Produto = _produtoRepository.GetById(entity.ProdutoId);
-
-            _metas.Add(entity);
-            return entity.Id;
+                entity.DataCriacao = DateTime.Now;
+                return connection.QuerySingle<int>(sql, entity);
+            }
         }
 
         public bool Update(Meta entity)
         {
-            var meta = GetById(entity.Id);
-            if (meta == null) return false;
+            using (var connection = new SqlConnection(_connectionString))
+            {
+                var sql = @"
+                    UPDATE Meta
+                    SET Nome = @Nome,
+                        VendedorId = @VendedorId,
+                        ProdutoId = @ProdutoId,
+                        TipoMeta = @TipoMeta,
+                        Valor = @Valor,
+                        Periodicidade = @Periodicidade,
+                        Ativo = @Ativo
+                    WHERE Id = @Id";
 
-            meta.Nome = entity.Nome;
-            meta.VendedorId = entity.VendedorId;
-            meta.ProdutoId = entity.ProdutoId;
-            meta.TipoMeta = entity.TipoMeta;
-            meta.Valor = entity.Valor;
-            meta.Periodicidade = entity.Periodicidade;
-            meta.Ativo = entity.Ativo;
-
-            // Atualiza as entidades relacionadas
-            meta.Vendedor = _vendedorRepository.GetById(entity.VendedorId);
-            meta.Produto = _produtoRepository.GetById(entity.ProdutoId);
-
-            return true;
+                return connection.Execute(sql, entity) > 0;
+            }
         }
 
         public bool Delete(int id)
         {
-            var meta = GetById(id);
-            if (meta == null) return false;
-
-            return _metas.Remove(meta);
+            using (var connection = new SqlConnection(_connectionString))
+            {
+                return connection.Execute("DELETE FROM Meta WHERE Id = @Id", new { Id = id }) > 0;
+            }
         }
 
         public Meta GetById(int id)
         {
-            var meta = _metas.FirstOrDefault(m => m.Id == id);
-            if (meta != null)
+            using (var connection = new SqlConnection(_connectionString))
             {
-                // Carrega as entidades relacionadas
-                meta.Vendedor = _vendedorRepository.GetById(meta.VendedorId);
-                meta.Produto = _produtoRepository.GetById(meta.ProdutoId);
+                var sql = BaseSelect + " WHERE m.Id = @Id";
+                return connection.Query<Meta, Vendedor, Produto, Meta>(
+                    sql,
+                    (meta, vendedor, produto) =>
+                    {
+                        meta.Vendedor = vendedor;
+                        meta.Produto = produto;
+                        return meta;
+                    },
+                    new { Id = id },
+                    splitOn: "Id,Id"
+                ).FirstOrDefault();
             }
-            return meta;
         }
 
         public IEnumerable<Meta> GetAll()
         {
-            var metas = _metas.OrderByDescending(m => m.DataCriacao).ToList();
-
-            // Carrega as entidades relacionadas
-            foreach (var meta in metas)
+            using (var connection = new SqlConnection(_connectionString))
             {
-                meta.Vendedor = _vendedorRepository.GetById(meta.VendedorId);
-                meta.Produto = _produtoRepository.GetById(meta.ProdutoId);
+                var sql = BaseSelect + " ORDER BY m.DataCriacao DESC";
+                return connection.Query<Meta, Vendedor, Produto, Meta>(
+                    sql,
+                    (meta, vendedor, produto) =>
+                    {
+                        meta.Vendedor = vendedor;
+                        meta.Produto = produto;
+                        return meta;
+                    },
+                    splitOn: "Id,Id"
+                );
             }
-
-            return metas;
         }
 
         public IEnumerable<Meta> GetActive()
         {
-            var metas = _metas.Where(m => m.Ativo).OrderByDescending(m => m.DataCriacao).ToList();
-
-            // Carrega as entidades relacionadas
-            foreach (var meta in metas)
+            using (var connection = new SqlConnection(_connectionString))
             {
-                meta.Vendedor = _vendedorRepository.GetById(meta.VendedorId);
-                meta.Produto = _produtoRepository.GetById(meta.ProdutoId);
+                var sql = BaseSelect + " WHERE m.Ativo = 1 ORDER BY m.DataCriacao DESC";
+                return connection.Query<Meta, Vendedor, Produto, Meta>(
+                    sql,
+                    (meta, vendedor, produto) =>
+                    {
+                        meta.Vendedor = vendedor;
+                        meta.Produto = produto;
+                        return meta;
+                    },
+                    splitOn: "Id,Id"
+                );
             }
-
-            return metas;
         }
 
         public bool Exists(int id)
         {
-            return _metas.Any(m => m.Id == id);
+            using (var connection = new SqlConnection(_connectionString))
+            {
+                return connection.ExecuteScalar<int>(
+                    "SELECT COUNT(1) FROM Meta WHERE Id = @Id", new { Id = id }) > 0;
+            }
         }
 
         public bool ActivateDeactivate(int id, bool activate)
         {
-            var meta = GetById(id);
-            if (meta == null) return false;
-
-            meta.Ativo = activate;
-            return true;
+            using (var connection = new SqlConnection(_connectionString))
+            {
+                return connection.Execute(
+                    "UPDATE Meta SET Ativo = @Ativo WHERE Id = @Id",
+                    new { Id = id, Ativo = activate }) > 0;
+            }
         }
 
         public IEnumerable<Meta> GetByVendedor(int vendedorId)
         {
-            var metas = _metas.Where(m => m.VendedorId == vendedorId).OrderByDescending(m => m.DataCriacao).ToList();
-
-            // Carrega as entidades relacionadas
-            foreach (var meta in metas)
+            using (var connection = new SqlConnection(_connectionString))
             {
-                meta.Vendedor = _vendedorRepository.GetById(meta.VendedorId);
-                meta.Produto = _produtoRepository.GetById(meta.ProdutoId);
+                var sql = BaseSelect + " WHERE m.VendedorId = @VendedorId ORDER BY m.DataCriacao DESC";
+                return connection.Query<Meta, Vendedor, Produto, Meta>(
+                    sql,
+                    (meta, vendedor, produto) =>
+                    {
+                        meta.Vendedor = vendedor;
+                        meta.Produto = produto;
+                        return meta;
+                    },
+                    new { VendedorId = vendedorId },
+                    splitOn: "Id,Id"
+                );
             }
-
-            return metas;
         }
 
         public IEnumerable<Meta> GetByProduto(int produtoId)
         {
-            var metas = _metas.Where(m => m.ProdutoId == produtoId).OrderByDescending(m => m.DataCriacao).ToList();
-
-            // Carrega as entidades relacionadas
-            foreach (var meta in metas)
+            using (var connection = new SqlConnection(_connectionString))
             {
-                meta.Vendedor = _vendedorRepository.GetById(meta.VendedorId);
-                meta.Produto = _produtoRepository.GetById(meta.ProdutoId);
+                var sql = BaseSelect + " WHERE m.ProdutoId = @ProdutoId ORDER BY m.DataCriacao DESC";
+                return connection.Query<Meta, Vendedor, Produto, Meta>(
+                    sql,
+                    (meta, vendedor, produto) =>
+                    {
+                        meta.Vendedor = vendedor;
+                        meta.Produto = produto;
+                        return meta;
+                    },
+                    new { ProdutoId = produtoId },
+                    splitOn: "Id,Id"
+                );
             }
-
-            return metas;
         }
 
         public IEnumerable<Meta> GetByTipoMeta(TipoMeta tipoMeta)
         {
-            var metas = _metas.Where(m => m.TipoMeta == tipoMeta).OrderByDescending(m => m.DataCriacao).ToList();
-
-            // Carrega as entidades relacionadas
-            foreach (var meta in metas)
+            using (var connection = new SqlConnection(_connectionString))
             {
-                meta.Vendedor = _vendedorRepository.GetById(meta.VendedorId);
-                meta.Produto = _produtoRepository.GetById(meta.ProdutoId);
+                var sql = BaseSelect + " WHERE m.TipoMeta = @TipoMeta ORDER BY m.DataCriacao DESC";
+                return connection.Query<Meta, Vendedor, Produto, Meta>(
+                    sql,
+                    (meta, vendedor, produto) =>
+                    {
+                        meta.Vendedor = vendedor;
+                        meta.Produto = produto;
+                        return meta;
+                    },
+                    new { TipoMeta = (int)tipoMeta },
+                    splitOn: "Id,Id"
+                );
             }
-
-            return metas;
         }
 
         public IEnumerable<Meta> GetByPeriodicidade(PeriodicidadeMeta periodicidade)
         {
-            var metas = _metas.Where(m => m.Periodicidade == periodicidade).OrderByDescending(m => m.DataCriacao).ToList();
-
-            // Carrega as entidades relacionadas
-            foreach (var meta in metas)
+            using (var connection = new SqlConnection(_connectionString))
             {
-                meta.Vendedor = _vendedorRepository.GetById(meta.VendedorId);
-                meta.Produto = _produtoRepository.GetById(meta.ProdutoId);
+                var sql = BaseSelect + " WHERE m.Periodicidade = @Periodicidade ORDER BY m.DataCriacao DESC";
+                return connection.Query<Meta, Vendedor, Produto, Meta>(
+                    sql,
+                    (meta, vendedor, produto) =>
+                    {
+                        meta.Vendedor = vendedor;
+                        meta.Produto = produto;
+                        return meta;
+                    },
+                    new { Periodicidade = (int)periodicidade },
+                    splitOn: "Id,Id"
+                );
             }
-
-            return metas;
-        }
-
-        public IEnumerable<Meta> GetMetasAtivas()
-        {
-            return GetActive();
         }
 
         public IEnumerable<Meta> SearchByFilter(string filtroVendedor = null, int? produtoId = null,
             TipoMeta? tipoMeta = null, PeriodicidadeMeta? periodicidade = null)
         {
-            var query = _metas.AsQueryable();
-
-            if (!string.IsNullOrWhiteSpace(filtroVendedor))
+            using (var connection = new SqlConnection(_connectionString))
             {
-                var vendedoresIds = _vendedorRepository.SearchByFilter(filtroVendedor)
-                    .Select(v => v.Id).ToList();
-                query = query.Where(m => vendedoresIds.Contains(m.VendedorId));
+                var sql = BaseSelect + " WHERE 1=1 ";
+                var parameters = new DynamicParameters();
+
+                if (!string.IsNullOrWhiteSpace(filtroVendedor))
+                {
+                    sql += " AND v.Nome LIKE @FiltroVendedor";
+                    parameters.Add("@FiltroVendedor", $"%{filtroVendedor}%");
+                }
+
+                if (produtoId.HasValue)
+                {
+                    sql += " AND m.ProdutoId = @ProdutoId";
+                    parameters.Add("@ProdutoId", produtoId.Value);
+                }
+
+                if (tipoMeta.HasValue)
+                {
+                    sql += " AND m.TipoMeta = @TipoMeta";
+                    parameters.Add("@TipoMeta", (int)tipoMeta.Value);
+                }
+
+                if (periodicidade.HasValue)
+                {
+                    sql += " AND m.Periodicidade = @Periodicidade";
+                    parameters.Add("@Periodicidade", (int)periodicidade.Value);
+                }
+
+                sql += " ORDER BY m.DataCriacao DESC";
+
+                return connection.Query<Meta, Vendedor, Produto, Meta>(
+                    sql,
+                    (meta, vendedor, produto) =>
+                    {
+                        meta.Vendedor = vendedor;
+                        meta.Produto = produto;
+                        return meta;
+                    },
+                    parameters,
+                    splitOn: "Id,Id"
+                );
             }
-
-            if (produtoId.HasValue)
-                query = query.Where(m => m.ProdutoId == produtoId.Value);
-
-            if (tipoMeta.HasValue)
-                query = query.Where(m => m.TipoMeta == tipoMeta.Value);
-
-            if (periodicidade.HasValue)
-                query = query.Where(m => m.Periodicidade == periodicidade.Value);
-
-            var metas = query.OrderByDescending(m => m.DataCriacao).ToList();
-
-            // Carrega as entidades relacionadas
-            foreach (var meta in metas)
-            {
-                meta.Vendedor = _vendedorRepository.GetById(meta.VendedorId);
-                meta.Produto = _produtoRepository.GetById(meta.ProdutoId);
-            }
-
-            return metas;
         }
 
         public bool ExisteMetaDuplicada(int vendedorId, int produtoId, TipoMeta tipoMeta,
             PeriodicidadeMeta periodicidade, int excludeId = 0)
         {
-            return _metas.Any(m =>
-                m.VendedorId == vendedorId &&
-                m.ProdutoId == produtoId &&
-                m.TipoMeta == tipoMeta &&
-                m.Periodicidade == periodicidade &&
-                m.Id != excludeId &&
-                m.Ativo);
+            using (var connection = new SqlConnection(_connectionString))
+            {
+                var query = @"
+                    SELECT COUNT(1) 
+                    FROM Meta
+                    WHERE VendedorId = @VendedorId
+                      AND ProdutoId = @ProdutoId
+                      AND TipoMeta = @TipoMeta
+                      AND Periodicidade = @Periodicidade
+                      AND Id <> @ExcludeId
+                      AND Ativo = 1";
+
+                return connection.ExecuteScalar<int>(query, new
+                {
+                    VendedorId = vendedorId,
+                    ProdutoId = produtoId,
+                    TipoMeta = (int)tipoMeta,
+                    Periodicidade = (int)periodicidade,
+                    ExcludeId = excludeId
+                }) > 0;
+            }
         }
 
         public bool ExisteMetaPorNome(string nome, int excludeId = 0)
         {
-            return _metas.Any(m =>
-                m.Nome.Equals(nome, StringComparison.OrdinalIgnoreCase) &&
-                m.Id != excludeId);
+            using (var connection = new SqlConnection(_connectionString))
+            {
+                var query = @"
+                    SELECT COUNT(1) 
+                    FROM Meta
+                    WHERE Nome = @Nome
+                      AND Id <> @ExcludeId";
+
+                return connection.ExecuteScalar<int>(query, new
+                {
+                    Nome = nome,
+                    ExcludeId = excludeId
+                }) > 0;
+            }
         }
 
         public Meta DuplicarMeta(int metaId)
@@ -241,11 +320,17 @@ namespace CadastroMetasVendedores.Repositories
                 ProdutoId = metaOriginal.ProdutoId,
                 TipoMeta = metaOriginal.TipoMeta,
                 Valor = metaOriginal.Valor,
-                Periodicidade = metaOriginal.Periodicidade
+                Periodicidade = metaOriginal.Periodicidade,
+                Ativo = metaOriginal.Ativo
             };
 
-            Insert(novaMeta);
-            return novaMeta;
+            var novoId = Insert(novaMeta);
+            return GetById(novoId);
+        }
+
+        public IEnumerable<Meta> GetMetasAtivas()
+        {
+            return GetActive();
         }
     }
 }

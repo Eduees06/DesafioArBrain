@@ -1,117 +1,144 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data.SqlClient;
 using System.Linq;
 using CadastroMetasVendedores.Models;
 using CadastroMetasVendedores.Repositories.Interfaces;
+using Dapper;
 
 namespace CadastroMetasVendedores.Repositories
 {
     public class VendedorRepository : IVendedorRepository
     {
-        // Lista em memória para simulação
-        private static List<Vendedor> _vendedores = new List<Vendedor>();
-        private static int _nextId = 1;
-
-        static VendedorRepository()
-        {
-            // Dados iniciais fake para testes
-            CarregarDadosIniciais();
-        }
-
-        private static void CarregarDadosIniciais()
-        {
-            _vendedores = new List<Vendedor>
-            {
-                new Vendedor { Id = _nextId++, Nome = "João Silva", Email = "joao@email.com", Telefone = "(11) 99999-0001" },
-                new Vendedor { Id = _nextId++, Nome = "Maria Santos", Email = "maria@email.com", Telefone = "(11) 99999-0002" },
-                new Vendedor { Id = _nextId++, Nome = "Pedro Costa", Email = "pedro@email.com", Telefone = "(11) 99999-0003" },
-                new Vendedor { Id = _nextId++, Nome = "Ana Oliveira", Email = "ana@email.com", Telefone = "(11) 99999-0004" }
-            };
-        }
+        private readonly string _connectionString =
+            "Data Source=DESKTOP-I82247C\\SQLEXPRESS;Initial Catalog=MinhaBaseDeDados;Integrated Security=True;Encrypt=False";
 
         public int Insert(Vendedor entity)
         {
-            entity.Id = _nextId++;
-            entity.DataCadastro = DateTime.Now;
-            _vendedores.Add(entity);
-            return entity.Id;
+            using (var connection = new SqlConnection(_connectionString))
+            {
+                var sql = @"
+                    INSERT INTO Vendedor (Nome, Email, Telefone, DataCadastro, Ativo)
+                    VALUES (@Nome, @Email, @Telefone, @DataCadastro, @Ativo);
+                    SELECT CAST(SCOPE_IDENTITY() as int);";
+
+                entity.DataCadastro = DateTime.Now;
+                return connection.QuerySingle<int>(sql, entity);
+            }
         }
 
         public bool Update(Vendedor entity)
         {
-            var vendedor = GetById(entity.Id);
-            if (vendedor == null) return false;
+            using (var connection = new SqlConnection(_connectionString))
+            {
+                var sql = @"
+                    UPDATE Vendedor
+                    SET Nome = @Nome,
+                        Email = @Email,
+                        Telefone = @Telefone,
+                        Ativo = @Ativo
+                    WHERE Id = @Id";
 
-            vendedor.Nome = entity.Nome;
-            vendedor.Email = entity.Email;
-            vendedor.Telefone = entity.Telefone;
-            vendedor.Ativo = entity.Ativo;
-
-            return true;
+                return connection.Execute(sql, entity) > 0;
+            }
         }
 
         public bool Delete(int id)
         {
-            var vendedor = GetById(id);
-            if (vendedor == null) return false;
-
-            return _vendedores.Remove(vendedor);
+            using (var connection = new SqlConnection(_connectionString))
+            {
+                return connection.Execute("DELETE FROM Vendedor WHERE Id = @Id", new { Id = id }) > 0;
+            }
         }
 
         public Vendedor GetById(int id)
         {
-            return _vendedores.FirstOrDefault(v => v.Id == id);
+            using (var connection = new SqlConnection(_connectionString))
+            {
+                return connection.QueryFirstOrDefault<Vendedor>(
+                    "SELECT * FROM Vendedor WHERE Id = @Id", new { Id = id });
+            }
         }
 
         public IEnumerable<Vendedor> GetAll()
         {
-            return _vendedores.OrderBy(v => v.Nome);
+            using (var connection = new SqlConnection(_connectionString))
+            {
+                return connection.Query<Vendedor>("SELECT * FROM Vendedor ORDER BY Nome");
+            }
         }
 
         public IEnumerable<Vendedor> GetActive()
         {
-            return _vendedores.Where(v => v.Ativo).OrderBy(v => v.Nome);
+            using (var connection = new SqlConnection(_connectionString))
+            {
+                return connection.Query<Vendedor>(
+                    "SELECT * FROM Vendedor WHERE Ativo = 1 ORDER BY Nome");
+            }
         }
 
         public bool Exists(int id)
         {
-            return _vendedores.Any(v => v.Id == id);
+            using (var connection = new SqlConnection(_connectionString))
+            {
+                return connection.ExecuteScalar<int>(
+                    "SELECT COUNT(1) FROM Vendedor WHERE Id = @Id", new { Id = id }) > 0;
+            }
         }
 
         public bool ActivateDeactivate(int id, bool activate)
         {
-            var vendedor = GetById(id);
-            if (vendedor == null) return false;
-
-            vendedor.Ativo = activate;
-            return true;
+            using (var connection = new SqlConnection(_connectionString))
+            {
+                return connection.Execute(
+                    "UPDATE Vendedor SET Ativo = @Ativo WHERE Id = @Id",
+                    new { Id = id, Ativo = activate }) > 0;
+            }
         }
 
         public bool ExistsByNome(string nome)
         {
-            return _vendedores.Any(v => v.Nome.Equals(nome, StringComparison.OrdinalIgnoreCase));
+            using (var connection = new SqlConnection(_connectionString))
+            {
+                return connection.ExecuteScalar<int>(
+                    "SELECT COUNT(1) FROM Vendedor WHERE Nome = @Nome", new { Nome = nome }) > 0;
+            }
         }
 
         public bool ExistsByNome(string nome, int excludeId)
         {
-            return _vendedores.Any(v => v.Nome.Equals(nome, StringComparison.OrdinalIgnoreCase) && v.Id != excludeId);
+            using (var connection = new SqlConnection(_connectionString))
+            {
+                return connection.ExecuteScalar<int>(
+                    "SELECT COUNT(1) FROM Vendedor WHERE Nome = @Nome AND Id <> @ExcludeId",
+                    new { Nome = nome, ExcludeId = excludeId }) > 0;
+            }
         }
 
         public IEnumerable<Vendedor> GetByNome(string nome)
         {
-            return _vendedores.Where(v => v.Nome.ToUpper().Contains(nome.ToUpper()));
+            using (var connection = new SqlConnection(_connectionString))
+            {
+                return connection.Query<Vendedor>(
+                    "SELECT * FROM Vendedor WHERE UPPER(Nome) LIKE @Filtro ORDER BY Nome",
+                    new { Filtro = $"%{nome.ToUpper()}%" });
+            }
         }
 
         public IEnumerable<Vendedor> SearchByFilter(string filtro)
         {
-            if (string.IsNullOrWhiteSpace(filtro))
-                return GetAll();
+            using (var connection = new SqlConnection(_connectionString))
+            {
+                if (string.IsNullOrWhiteSpace(filtro))
+                    return GetAll();
 
-            var filtroUpper = filtro.ToUpper();
-            return _vendedores.Where(v =>
-                v.Nome.ToUpper().Contains(filtroUpper) ||
-                v.Email.ToUpper().Contains(filtroUpper))
-                .OrderBy(v => v.Nome);
+                return connection.Query<Vendedor>(
+                    @"SELECT * FROM Vendedor 
+                      WHERE UPPER(Nome) LIKE @Filtro 
+                         OR UPPER(Email) LIKE @Filtro
+                      ORDER BY Nome",
+                    new { Filtro = $"%{filtro.ToUpper()}%" });
+            }
         }
     }
 }

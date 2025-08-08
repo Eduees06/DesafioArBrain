@@ -16,20 +16,7 @@ namespace CadastroMetasVendedores
 
             try
             {
-                // Inicializar os repositórios base primeiro (sem dependências circulares)
-                var vendedorRepository = new VendedorRepository();
-                var produtoRepository = new ProdutoRepository();
-
-                // Inicializar repositório que depende dos outros
-                var metaRepository = new MetaRepository(vendedorRepository, produtoRepository);
-
-                // Inicializar os serviços simplificados
-                var metaService = new MetaService(metaRepository, vendedorRepository, produtoRepository);
-                var vendedorService = new VendedorService(vendedorRepository);
-                var produtoService = new ProdutoService(produtoRepository);
-
-                // Criar o formulário de visualização como tela inicial
-                var form = new VisualizacaoMetasForm(metaService, vendedorService, produtoService);
+                var form = new Login();
 
                 Application.Run(form);
             }

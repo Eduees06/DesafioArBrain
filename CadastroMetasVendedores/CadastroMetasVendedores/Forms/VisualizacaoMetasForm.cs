@@ -946,6 +946,8 @@ namespace CadastroMetasVendedores.Forms
 
         private void BtnVoltar_Click(object sender, EventArgs e)
         {
+            var form = new Login();
+            form.Show();
             this.Close();
         }
 
